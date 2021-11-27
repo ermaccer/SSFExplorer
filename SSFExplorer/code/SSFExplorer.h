@@ -8,7 +8,7 @@
 #include "MKArchive.h"
 
 
-#define SSF_EXPLORER_VERSION L"1.0"
+#define SSF_EXPLORER_VERSION L"1.1"
 
 
 

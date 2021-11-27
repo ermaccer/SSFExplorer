@@ -349,7 +349,7 @@ void SSFExplorer::DisplayFileData()
 		std::wstring ver;
 		AddData(L"Size: " + std::to_wstring(Files[dwSel].ent.size));
 		AddData(L"Offset: " + std::to_wstring(Files[dwSel].ent.offset));
-		AddData(L"Type: " + GetSectionTypeName(Files[dwSel].ent.type));
+		AddData(GetSectionTypeName(Files[dwSel].ent.type));
 
 		switch (Files[dwSel].ent.type)
 		{
@@ -654,8 +654,14 @@ void SSFExplorer::ExportTexture()
 				oFile.write((char*)&palBuff[i].r, sizeof(char));
 				oFile.write((char*)&palBuff[i].a, sizeof(char));
 			}
-
-			oFile.write(dataOut.get(), dataSize);
+			for (int y = image.height - 1; y >= 0; y--)
+			{
+				for (int x = 0; x < image.width; x++)
+				{
+					oFile.write((char*)&dataOut[x + (y * image.width)], sizeof(char));
+				}
+			}
+			//oFile.write(dataOut.get(), dataSize);
 			Log(L"Texture " + outputName + L" saved!");
 		}
 		else if (m_settings.m_epPlatform == PLATFORM_PS2)
@@ -716,8 +722,7 @@ void SSFExplorer::ExportTexture()
 
 
 			int offset = 0;
-			if (isArmageddon)
-				offset = 4;
+
 
 			int adjust = 128;
 
@@ -728,8 +733,9 @@ void SSFExplorer::ExportTexture()
 			}
 	
 
-			pFile.seekg(baseOffset + PS2_HEADER_SIZE + (image.height * image.width) + adjust + offset, pFile.beg);
+			pFile.seekg(baseOffset + PS2_HEADER_SIZE + (image.height * image.width) + adjust, pFile.beg);
 
+			Log(L"Palette offset: " + std::to_wstring(baseOffset + PS2_HEADER_SIZE + (image.height * image.width) + adjust));
 
 
 			std::unique_ptr<int[]> palBuff = std::make_unique<int[]>(PSP_PAL_SIZE / sizeof(pal_psp_data));
@@ -737,8 +743,10 @@ void SSFExplorer::ExportTexture()
 			for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
 				pFile.read((char*)&palBuff[i], sizeof(int));
 	
-
+			
 			pFile.seekg(baseOffset + PS2_HEADER_SIZE, pFile.beg);
+
+			Log(L"Texture offset: " + std::to_wstring(baseOffset + PS2_HEADER_SIZE));
 
 			int dataSize = image.width * image.height;
 
@@ -810,8 +818,15 @@ void SSFExplorer::ExportTexture()
 				oFile.write((char*)&palBuff[i], sizeof(int));
 
 			}
+			for (int y = image.height - 1; y >= 0; y--)
+			{
+				for (int x = 0; x < image.width; x++)
+				{
+					oFile.write((char*)&dataOut[x + (y * image.width)], sizeof(char));
+				}
+			}
 
-			oFile.write(dataOut.get(), dataSize);
+			//oFile.write(dataOut.get(), dataSize);
 			Log(L"Texture " + outputName + L" saved!");
 		}
 		else
@@ -874,7 +889,7 @@ void SSFExplorer::Build()
 		if (std::filesystem::exists(Files[i].name))
 		{
 			if (!m_bUsesFilenames)
-				m_secHeader.fileSize += makePad(std::filesystem::file_size(Files[i].name), 2048);
+				m_secHeader.fileSize += makePad(std::filesystem::file_size(Files[i].name), DEFAULT_SSF_PADSIZE);
 			else
 				m_secHeader.fileSize += std::filesystem::file_size(Files[i].name);
 		}
@@ -963,7 +978,7 @@ void SSFExplorer::Build()
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
 
-		int fsize = makePad(std::filesystem::file_size(Files[i].name), 2048);
+		int fsize = makePad(std::filesystem::file_size(Files[i].name), DEFAULT_SSF_PADSIZE);
 		Files[i].ent.size = std::filesystem::file_size(Files[i].name);
 
 
