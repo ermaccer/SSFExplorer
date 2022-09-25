@@ -42,6 +42,9 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 		EnableWindow(GetDlgItem(hDlg, SSF_SELECT_BUILD_FILE), FALSE);
 		EnableWindow(GetDlgItem(hDlg, MAKE_SSF), FALSE);
 		EnableMenuItem(hMenu, ID_FILE_CLOSE, MF_DISABLED);
+		EnableMenuItem(hMenu, ID_EXPORTALLTEXTURES_DEFAULT, MF_DISABLED);
+		EnableMenuItem(hMenu, ID_EXPORTALLTEXTURES_TGA, MF_DISABLED);
+		EnableMenuItem(hMenu, ID_EXPORTALLTEXTURES_WITHALPHACHANNEL32779, MF_DISABLED);
 	}
 	else
 	{
@@ -65,7 +68,9 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 			EnableWindow(GetDlgItem(hDlg, SSF_SELECT_BUILD_FILE), FALSE);
 			EnableWindow(GetDlgItem(hDlg, MAKE_SSF), FALSE);
 			EnableWindow(GetDlgItem(hDlg, SSF_TEXTURE), TRUE);
-
+			EnableMenuItem(hMenu, ID_EXPORTALLTEXTURES_DEFAULT, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EXPORTALLTEXTURES_WITHALPHACHANNEL32779, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EXPORTALLTEXTURES_TGA, MF_ENABLED);
 
 		}
 
@@ -125,6 +130,21 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 			pSSFExplorer->Export();
 		if (LOWORD(wParam) == SSF_TEXTURE)
 			pSSFExplorer->ExportTexture();
+		if (LOWORD(wParam) == ID_EXPORTALLTEXTURES_DEFAULT)
+			pSSFExplorer->ExportAllTextures();
+		if (LOWORD(wParam) == ID_EXPORTALLTEXTURES_WITHALPHACHANNEL32779)
+			pSSFExplorer->ExportAllTextures(true);
+		if (LOWORD(wParam) == ID_EXPORTALLTEXTURES_TGA)
+			pSSFExplorer->ExportAllTextures(true, OutputImage_TGA);
+		if (LOWORD(wParam) == ID_TOOLS_MKDA)
+		{
+			pSSFExplorer = new SSFExplorer();
+			pSSFExplorer->Init(&hLog, &hList, &hDataBox);
+			pSSFExplorer->ExtractPAK();
+			delete pSSFExplorer;
+
+		}
+
 		if (wParam == IDM_ABOUT)
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hDlg, About);
 

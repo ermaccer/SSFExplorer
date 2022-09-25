@@ -13,7 +13,10 @@ enum eSectionFileTypes : int {
 	FILE_TYPE_ANIMATION_SECTION = 3,
 	FILE_TYPE_ANIMATION_TEXTURE = 3,
 	FILE_TYPE_MODEL,
-	FILE_TYPE_ANIMATION
+	FILE_TYPE_ANIMATION,
+	FILE_TYPE_SECTION_DA,
+	FILE_TYPE_SCRIPT_DA,
+	FILE_TYPE_ANIMATION_SECTION_DA
 
 };
 
@@ -36,11 +39,11 @@ struct section_file_entry {
 
 struct section_file_header_da {
 	int   header;
-	int   version; // 4?
+	int   version;
 	int   pad;
 	int   unknown;
 	int   files;
-	int   stringSize;
+	int   fileSize;
 };
 
 
@@ -48,11 +51,34 @@ struct section_file_entry_da {
 	eSectionFileTypes type;
 	int				  offset;
 	int				  size;
-	int               stringOffset;
 };
 
 
+struct pak_header {
+	int header; // PAK 
+	int version; // 256 or 1
+	int files;
+	int filesOffset;
+	int stringSize;
+
+	char pad[2028] = {};
+};
+
+struct pak_entry {
+	int stringOffset;
+	int offset;
+	int size;
+};
+
+
+section_file_header DA2D_Header(section_file_header_da da_header);
+section_file_entry DA2D_Entry(section_file_entry_da da_entry);
+
+
+section_file_header_da D2DA_Header(section_file_header d_header);
+section_file_entry_da D2DA_Entry(section_file_entry d_entry);
 
 
 
 std::wstring GetSectionTypeName(eSectionFileTypes type);
+std::wstring GetSectionTypeName_DA(eSectionFileTypes type);

@@ -6,7 +6,7 @@
 #define PS2_HEADER_SIZE 592
 #define PS2_PAL_SIZE 1024
 
-
+#define PS2_PALETTE_GARBAGE_SIZE 336
 
 struct bmp_info_header {
 	int      biSize;
@@ -39,6 +39,18 @@ struct image_data {
 	int  width;
 	char bits;
 };
+
+#pragma pack(push,1)
+struct tga_header {
+	short pad = {};
+	char  imageType;
+	char  _pad[9] = {};
+	short x;
+	short y;
+	char depth;
+	char imageDescriptor;
+};
+#pragma pack(pop)
 
 // ps2 too
 struct pal_psp_data {

@@ -8,8 +8,15 @@
 #include "MKArchive.h"
 
 
-#define SSF_EXPLORER_VERSION L"1.1"
+#define SSF_EXPLORER_VERSION L"1.2"
 
+
+enum eOutputImageFormat {
+	OutputImage_BMP,
+	OutputImage_TGA,
+	// TODO
+	OutputImage_PNG
+};
 
 
 
@@ -47,6 +54,13 @@ struct ssfexplorer_settings {
 };
 
 
+enum TextureExporter_Flags {
+	TE_ALPHA_CHANNEL = 1,
+	TE_SILENT = 2,
+	TE_BATCH_EXPORT = 4,
+	TE_TGA_EXPORT = 8
+};
+
 
 class SSFExplorer {
 private:
@@ -64,6 +78,7 @@ public:
 	section_file_header  m_secHeader;
 	bool				 m_bUsesFilenames;
 	bool				 m_bFighterFix;
+	int					 m_nUnknownDA;
 	std::wstring         m_wstrBuildFolder;
 
 	ssfexplorer_settings m_settings;
@@ -75,6 +90,8 @@ public:
 	void OpenFile(std::wstring input);
 	void OpenINI(std::wstring input);
 	void ReadFile();
+	void ReadFile_D();
+	void ReadFile_DA();
 	void ReadINI();
 	void ListFiles();
 	bool ReadNamesFromFile(std::wstring name);
@@ -84,10 +101,18 @@ public:
 	void ExtractSelected();
 	void ExtractAll();
 	void Export();
+
 	void ExportTexture();
+
+	void ExportAllTextures(bool alpha = false, eOutputImageFormat img = OutputImage_BMP);
+
+	bool TextureExporter_Unchained(int baseOffset, DWORD dwSel, int flags = 0);
+	bool TextureExporter_DADA(int baseOffset, DWORD dwSel, int flags = 0);
 
 
 	void Build();
+
+	void ExtractPAK();
 
 	void Close();
 	void Log(std::wstring msg);

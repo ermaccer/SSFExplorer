@@ -41,6 +41,14 @@
 #define ID_FILE_SETTINGS                32772
 #define ID_FILE_CLOSE                   32773
 #define ID_FILE_OPENINI                 32774
+#define ID_TOOLS_EXPORTALLTEXTURES      32775
+#define ID_EXPORTALLTEXTURES_DEFAULT    32776
+#define ID_EXPORTALLTEXTURES_WITHALPHACHANNEL 32777
+#define ID_TOOLS_MKDA                   32778
+#define ID_EXPORTALLTEXTURES_WITHALPHACHANNEL32779 32779
+#define ID_EXPORTALLTEXTURES_BMP        32780
+#define ID_BMP_BUTTON                   32781
+#define ID_EXPORTALLTEXTURES_TGA        32782
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -49,7 +57,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        130
-#define _APS_NEXT_COMMAND_VALUE         32775
+#define _APS_NEXT_COMMAND_VALUE         32783
 #define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

@@ -97,139 +97,223 @@ void SSFExplorer::ReadFile()
 	if (pFile.is_open())
 	{
 		Log(L"Opening: " + wsplitString(InputPath, true));
-		section_file_header sec;
-		pFile.read((char*)&sec, sizeof(section_file_header));
 
 		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+			ReadFile_DA();
+		else
+			ReadFile_D();
+	}
+
+}
+
+void SSFExplorer::ReadFile_D()
+{
+	section_file_header sec;
+	pFile.read((char*)&sec, sizeof(section_file_header));
+
+	if ((sec.header == ' CES') && !(m_settings.m_epPlatform == PLATFORM_GC_WII))
+	{
+		MessageBox(eApp::hWindow, L"Input file is a GC/WII file, but the platform setting doesn't match!", L"Error", MB_ICONERROR);
+		return;
+	}
+
+
+	if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+	{
+		if (!(sec.header == ' CES'))
 		{
-			pFile.seekg(-4, pFile.cur);
+			MessageBox(eApp::hWindow, L"Input file is not a valid Section file!", L"Error", MB_ICONERROR);
+			return;
+		}
+	}
+	else
+	{
+		if (!(sec.header == 'SEC '))
+		{
+			MessageBox(eApp::hWindow, L"Input file is not a valid Section file!", L"Error", MB_ICONERROR);
+			return;
+		}
+	}
+
+
+	if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+	{
+		Log(L"Processing as GC/Wii file");
+		changeEndINT(&sec.files);
+		changeEndINT(&sec.fileSize);
+		changeEndINT(&sec.pad);
+		changeEndINT(&sec.stringSize);
+		changeEndINT(&sec.unknown);
+		changeEndINT(&sec.version);
+	}
+
+
+
+	Log(L"Files: " + std::to_wstring(sec.files));
+
+	for (int i = 0; i < sec.files; i++)
+	{
+		section_file_entry ent;
+		pFile.read((char*)&ent, sizeof(section_file_entry));
+
+		file_entry file;
+		file.ent = ent;
+
+		if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+		{
+			changeEndINT(&file.ent.offset);
+			changeEndINT(&file.ent.size);
+			changeEndINT((int*)&file.ent.type);
+			changeEndINT(&file.ent.stringOffset);
 		}
 
+		Files.push_back(file);
+	}
 
-		if ((sec.header == ' CES') && !(m_settings.m_epPlatform == PLATFORM_GC_WII))
+	for (unsigned int i = 0; i < Files.size(); i++)
+		Log(L"Size: " + std::to_wstring(Files[i].ent.size) + L" Type: " + std::to_wstring(Files[i].ent.type));
+
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+	{
+		if (sec.stringSize <= NO_STRING_DATA)
 		{
-			MessageBox(eApp::hWindow, L"Input file is a GC/WII file, but the platform setting doesn't match!", L"Error", MB_ICONERROR);
+			MessageBox(eApp::hWindow, L"Deadly Alliance subarchives are not supported!", L"Error", MB_ICONERROR);
 			return;
 		}
 
+	}
 
-		if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+
+	if (sec.stringSize >= NO_STRING_DATA || sec.stringSize <= 20)
+	{
+
+		if (!ReadNamesFromFile(InputPath))
 		{
-			if (!(sec.header == ' CES'))
-			{
-				MessageBox(eApp::hWindow, L"Input file is not a valid Section file!", L"Error", MB_ICONERROR);
-				return;
-			}
-		}
-		else
-		{
-			if (!(sec.header == 'SEC '))
-			{
-				MessageBox(eApp::hWindow, L"Input file is not a valid Section file!", L"Error", MB_ICONERROR);
-				return;
-			}
-		}
-
-
-		if (m_settings.m_epPlatform == PLATFORM_GC_WII)
-		{
-			Log(L"Processing as GC/Wii file");
-			changeEndINT(&sec.files);
-			changeEndINT(&sec.fileSize);
-			changeEndINT(&sec.pad);
-			changeEndINT(&sec.stringSize);
-			changeEndINT(&sec.unknown);
-			changeEndINT(&sec.version);
-		}
-
-
-
-		Log(L"Files: " + std::to_wstring(sec.files));
-
-		for (int i = 0; i < sec.files; i++)
-		{
-			section_file_entry ent;
-			pFile.read((char*)&ent, sizeof(section_file_entry));
-
-			if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-			{
-				pFile.seekg(-4, pFile.cur);
-
-				// da
-				// type
-				// offset
-				// size
-
-			}
-
-
-			file_entry file;
-			file.ent = ent;
-
-			if (m_settings.m_epPlatform == PLATFORM_GC_WII)
-			{
-				changeEndINT(&file.ent.offset);
-				changeEndINT(&file.ent.size);
-				changeEndINT((int*)&file.ent.type);
-				changeEndINT(&file.ent.stringOffset);
-			}
-
-			Files.push_back(file);
-		}
-
-		for (unsigned int i = 0; i < Files.size(); i++)
-			Log(L"Size: " + std::to_wstring(Files[i].ent.size) + L" Type: " + std::to_wstring(Files[i].ent.type));
-
-		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-		{
-			if (sec.stringSize <= NO_STRING_DATA)
-			{
-				MessageBox(eApp::hWindow, L"Deadly Alliance subarchives are not supported!", L"Error", MB_ICONERROR);
-				return;
-			}
-
-		}
-
-
-		if (sec.stringSize >= NO_STRING_DATA || sec.stringSize <= 20)
-		{
-
-			if (!ReadNamesFromFile(InputPath))
-			{
-				// make file names
-				for (unsigned int i = 0; i < Files.size(); i++)
-				{
-					std::wstring name;
-					name = std::to_wstring(i);
-					name += L".dat";
-					Files[i].name = name;
-				}
-
-			}
-		}
-		else
-		{
-			m_bUsesFilenames = true;
-			std::string line;
+			// make file names
 			for (unsigned int i = 0; i < Files.size(); i++)
 			{
-				std::getline(pFile, line, '\0');
-				std::string str(line.c_str(), strlen(line.c_str()));
-				std::wstring wstr(str.length(), L' ');
-				std::copy(str.begin(), str.end(), wstr.begin());
-				Files[i].name = wstr;
+				std::wstring name;
+				name = std::to_wstring(i);
+				name += L".dat";
+				Files[i].name = name;
 			}
+
+		}
+	}
+	else
+	{
+		m_bUsesFilenames = true;
+		std::string line;
+		for (unsigned int i = 0; i < Files.size(); i++)
+		{
+			std::getline(pFile, line, '\0');
+			std::string str(line.c_str(), strlen(line.c_str()));
+			std::wstring wstr(str.length(), L' ');
+			std::copy(str.begin(), str.end(), wstr.begin());
+			Files[i].name = wstr;
+		}
+	}
+
+	SetWindowText(GetDlgItem(eApp::hWindow, SSF_FILENAME), wsplitString(InputPath, true).c_str());
+
+	ListFiles();
+	m_secHeader = sec;
+
+	eApp::bIsIni = FALSE;
+	eApp::bIsReady = TRUE;
+}
+
+void SSFExplorer::ReadFile_DA()
+{
+	section_file_header_da sec;
+	pFile.read((char*)&sec, sizeof(section_file_header_da));
+
+	if ((sec.header == ' CES') && !(m_settings.m_epPlatform == PLATFORM_GC_WII))
+	{
+		MessageBox(eApp::hWindow, L"Input file is a GC/WII file, but the platform setting doesn't match!", L"Error", MB_ICONERROR);
+		return;
+	}
+
+
+	if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+	{
+		if (!(sec.header == ' CES'))
+		{
+			MessageBox(eApp::hWindow, L"Input file is not a valid Section file!", L"Error", MB_ICONERROR);
+			return;
+		}
+	}
+	else
+	{
+		if (!(sec.header == 'SEC '))
+		{
+			MessageBox(eApp::hWindow, L"Input file is not a valid Section file!", L"Error", MB_ICONERROR);
+			return;
+		}
+	}
+
+
+	if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+	{
+		Log(L"Processing as GC/Wii file");
+		changeEndINT(&sec.files);
+		changeEndINT(&sec.fileSize);
+		changeEndINT(&sec.pad);
+		changeEndINT(&sec.unknown);
+		changeEndINT(&sec.version);
+	}
+
+
+
+	Log(L"Files: " + std::to_wstring(sec.files));
+
+	for (int i = 0; i < sec.files; i++)
+	{
+		section_file_entry_da ent;
+		pFile.read((char*)&ent, sizeof(section_file_entry_da));
+
+
+		section_file_entry d_ent = DA2D_Entry(ent);
+
+		file_entry file;
+		file.ent = d_ent;
+
+		if (m_settings.m_epPlatform == PLATFORM_GC_WII)
+		{
+			changeEndINT(&file.ent.offset);
+			changeEndINT(&file.ent.size);
+			changeEndINT((int*)&file.ent.type);
 		}
 
-		SetWindowText(GetDlgItem(eApp::hWindow, SSF_FILENAME), wsplitString(InputPath,true).c_str());
+		Files.push_back(file);
+	}
 
-		ListFiles();
-		m_secHeader = sec;
+	for (unsigned int i = 0; i < Files.size(); i++)
+		Log(L"Size: " + std::to_wstring(Files[i].ent.size) + L" Type: " + std::to_wstring(Files[i].ent.type));
 
-		eApp::bIsIni = FALSE;
-		eApp::bIsReady = TRUE;
+
+	if (!ReadNamesFromFile(InputPath))
+	{
+		// make file names
+		for (unsigned int i = 0; i < Files.size(); i++)
+		{
+			std::wstring name;
+			name = std::to_wstring(i);
+			name += L".dat";
+			Files[i].name = name;
+		}
 
 	}
+
+	SetWindowText(GetDlgItem(eApp::hWindow, SSF_FILENAME), wsplitString(InputPath, true).c_str());
+
+	ListFiles();
+
+	m_nUnknownDA = sec.unknown;
+	m_secHeader = DA2D_Header(sec);
+
+	eApp::bIsIni = FALSE;
+	eApp::bIsReady = TRUE;
 }
 
 void SSFExplorer::ReadINI()
@@ -252,6 +336,9 @@ void SSFExplorer::ReadINI()
 	m_wstrBuildFolder = reader.ReadString(L"Build.Settings", L"Folder ", 0);
 
 
+	int isDa = reader.ReadInteger(L"Build.Settings", L"IsDA", 0);
+	if (isDa)
+		m_nUnknownDA = reader.ReadInteger(L"Build.Settings", L"UnknownDA", 0);
 
 	wchar_t tmp[128] = {};
 	for (int i = 0; i < m_secHeader.files; i++)
@@ -304,6 +391,9 @@ bool SSFExplorer::ReadNamesFromFile(std::wstring name)
 	case MORTAL_KOMBAT_ARMAGEDDON:
 		path += L"\\mka\\";
 		break;
+	case MORTAL_KOMBAT_DEADLY_ALLIANCE:
+		path += L"\\mkda\\";
+		break;
 	default:
 		path += L"\\";
 		break;
@@ -349,7 +439,10 @@ void SSFExplorer::DisplayFileData()
 		std::wstring ver;
 		AddData(L"Size: " + std::to_wstring(Files[dwSel].ent.size));
 		AddData(L"Offset: " + std::to_wstring(Files[dwSel].ent.offset));
-		AddData(GetSectionTypeName(Files[dwSel].ent.type));
+		std::wstring sectionType = GetSectionTypeName(Files[dwSel].ent.type);
+		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+			sectionType = GetSectionTypeName_DA(Files[dwSel].ent.type);
+		AddData(sectionType);
 
 		switch (Files[dwSel].ent.type)
 		{
@@ -365,7 +458,7 @@ void SSFExplorer::DisplayFileData()
 			{
 				AddData(L"Files: " + std::to_wstring(sec.files));
 
-				for (unsigned int i = 0; i < sec.files; i++)
+				for (int i = 0; i < sec.files; i++)
 				{
 					section_file_entry ent;
 					pFile.read((char*)&ent, sizeof(section_file_entry));
@@ -428,6 +521,10 @@ void SSFExplorer::ExtractSelected()
 
 		std::ofstream oFile(OutputPath, std::ofstream::binary);
 		std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(Files[dwSel].ent.size);
+
+
+		Log(L"Offset: " + std::to_wstring(Files[dwSel].ent.offset) + L" Size: " + std::to_wstring(Files[dwSel].ent.size));
+
 		pFile.seekg(Files[dwSel].ent.offset, pFile.beg);
 		pFile.read(dataBuff.get(), Files[dwSel].ent.size);
 		oFile.write(dataBuff.get(), Files[dwSel].ent.size);
@@ -462,13 +559,6 @@ void SSFExplorer::ExtractAll()
 
 void SSFExplorer::Export()
 {
-	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-	{
-		MessageBox(eApp::hWindow, L"Not available for Deadly Alliance!", L"Error", MB_ICONERROR);
-		return;
-	}
-
-
 	std::wstring folder = SetFolderFromButton(eApp::hWindow);
 
 	if (folder.empty())
@@ -485,7 +575,15 @@ void SSFExplorer::Export()
 	ini << L"[Build.Settings]\n";
 	ini << L"Files = " << m_secHeader.files << std::endl;
 	ini << L"UsesFilenames = " << m_bUsesFilenames << std::endl;
-	ini << L"Folder = " << folderName.c_str() << std::endl << std::endl;;
+
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+	{
+		ini << L"IsDA = 1" << std::endl;
+		ini << L"UnknownDA = " << m_nUnknownDA << std::endl;
+	}
+
+
+	ini << L"Folder = " << folderName.c_str() << std::endl << std::endl;
 
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
@@ -510,18 +608,10 @@ void SSFExplorer::Export()
 
 		Log(L"File: " + Files[i].name + L" extracted!");
 	}
-
-
 }
 
 void SSFExplorer::ExportTexture()
 {
-	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-	{
-		MessageBox(eApp::hWindow, L"Not available for Deadly Alliance!", L"Error", MB_ICONERROR);
-		return;
-	}
-
 
 	if (m_settings.m_epPlatform == PLATFORM_XBOX || m_settings.m_epPlatform == PLATFORM_GC_WII)
 	{
@@ -529,7 +619,7 @@ void SSFExplorer::ExportTexture()
 		return;
 	}
 
-	if (m_settings.m_egGame == MORTAL_KOMBAT_ARMAGEDDON && m_settings.m_egGame == MORTAL_KOMBAT_DECEPTION)
+	if (m_settings.m_egGame == MORTAL_KOMBAT_ARMAGEDDON || m_settings.m_egGame == MORTAL_KOMBAT_DECEPTION)
 	{
 		if (m_settings.m_epPlatform == PLATFORM_PSP)
 		{
@@ -553,282 +643,11 @@ void SSFExplorer::ExportTexture()
 		pFile.seekg(baseOffset, pFile.beg);
 
 		if (m_settings.m_epPlatform == PLATFORM_PSP && m_settings.m_egGame == MORTAL_KOMBAT_UNCHAINED)
-		{
-			unsigned char len;
-			pFile.read((char*)&len, sizeof(char));
-
-			
-			std::wstring outputName = Files[dwSel].name;
-
-
-			if (len > 0)
-			{
-				std::unique_ptr<char[]> text = std::make_unique<char[]>(len);
-				pFile.read(text.get(), len);
-				std::string str(text.get(), len);
-
-				std::wstring wstr(str.length(), L' ');
-				std::copy(str.begin(), str.end(), wstr.begin());
-				outputName = wstr;
-			}
-
-
-
-
-			int x = 0;
-			int y = 0;
-
-			pFile.read((char*)&x, sizeof(int));
-			pFile.read((char*)&y, sizeof(int));
-
-			if (x > 4096 || y > 4096)
-			{
-				MessageBox(eApp::hWindow, L"Invalid texture data, most likely not a texture file!", 0, 0);
-				return;
-			}
-
-			image_data image;
-			image.width = x;
-			image.height = y;
-			image.bits = 8;
-
-			pFile.seekg(baseOffset + PSP_HEADER_SIZE, pFile.beg);
-
-			std::unique_ptr<pal_psp_data[]> palBuff = std::make_unique<pal_psp_data[]>(PSP_PAL_SIZE / sizeof(pal_psp_data));
-
-			for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
-				pFile.read((char*)&palBuff[i], sizeof(pal_psp_data));
-	
-			pFile.seekg(baseOffset + PSP_HEADER_SIZE + PSP_PAL_SIZE, pFile.beg);
-
-			int dataSize = image.width * image.height;
-
-			std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(dataSize);
-			pFile.read(dataBuff.get(), dataSize);
-
-			std::unique_ptr<char[]> dataOut = std::make_unique<char[]>(dataSize);
-
-			std::unique_ptr<char[]> dataOutCopy = std::make_unique<char[]>(dataSize);
-
-			outputName += L".bmp";
-
-			std::wstring output = SetSavePathFromButtonWithName(outputName, L"Bitmap Image File (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0", L"bmp", eApp::hWindow);
-
-			if (output.empty())
-				return;
-
-			std::ofstream oFile(output, std::ofstream::binary);
-
-			// unswizzle
-			Unswizzlers::PSP((unsigned int*)dataOut.get(), (unsigned int*)dataBuff.get(), image);
-
-			// create bmp
-			bmp_header bmp;
-			bmp_info_header bmpf;
-			bmp.bfType = 'MB';
-			bmp.bfSize = dataSize;
-			bmp.bfReserved1 = 0;
-			bmp.bfReserved2 = 0;
-			bmp.bfOffBits = sizeof(bmp_header) + sizeof(bmp_info_header) + PSP_PAL_SIZE;
-			bmpf.biSize = sizeof(bmp_info_header);
-			bmpf.biWidth = image.width;
-			bmpf.biHeight = image.height;
-			bmpf.biPlanes = 1;
-			bmpf.biBitCount = image.bits;
-			bmpf.biCompression = 0;
-			bmpf.biXPelsPerMeter = 2835;
-			bmpf.biYPelsPerMeter = 2835;
-			bmpf.biClrUsed = 256;
-			bmpf.biClrImportant = 0;
-
-			// write headers
-			oFile.write((char*)&bmp, sizeof(bmp_header));
-			oFile.write((char*)&bmpf, sizeof(bmp_info_header));
-
-			// write colors
-			for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
-			{
-				// swap red and blue
-				oFile.write((char*)&palBuff[i].b, sizeof(char));
-				oFile.write((char*)&palBuff[i].g, sizeof(char));
-				oFile.write((char*)&palBuff[i].r, sizeof(char));
-				oFile.write((char*)&palBuff[i].a, sizeof(char));
-			}
-			for (int y = image.height - 1; y >= 0; y--)
-			{
-				for (int x = 0; x < image.width; x++)
-				{
-					oFile.write((char*)&dataOut[x + (y * image.width)], sizeof(char));
-				}
-			}
-			//oFile.write(dataOut.get(), dataSize);
-			Log(L"Texture " + outputName + L" saved!");
-		}
-		else if (m_settings.m_epPlatform == PLATFORM_PS2)
-		{
-			// armageddon check
-
-			bool isArmageddon = false;
-
-			char check[4];
-			pFile.read((char*)&check, sizeof(check));
-
-			if (check[0] == 0x00 && check[1] == 0x00 && check[2] == 0x00 && check[3] == 0x00)
-			{
-				Log(L"Armageddon texture detected!");
-				isArmageddon = true;
-			}
-
-
-
-			if (!isArmageddon)
-				pFile.seekg(baseOffset, pFile.beg);
-
-			unsigned char len;
-			pFile.read((char*)&len, sizeof(char));
-
-
-			std::wstring outputName = Files[dwSel].name;
-
-
-			if (len > 0)
-			{
-				std::unique_ptr<char[]> text = std::make_unique<char[]>(len);
-				pFile.read(text.get(), len);
-				std::string str(text.get(), len);
-
-				std::wstring wstr(str.length(), L' ');
-				std::copy(str.begin(), str.end(), wstr.begin());
-				outputName = wstr;
-			}
-
-
-			int x = 0;
-			int y = 0;
-
-			pFile.read((char*)&x, sizeof(int));
-			pFile.read((char*)&y, sizeof(int));
-
-			if (x > 4096 || y > 4096)
-			{
-				MessageBox(eApp::hWindow, L"Invalid texture data, most likely not a texture file!", 0, 0);
-				return;
-			}
-
-			image_data image;
-			image.width = x;
-			image.height = y;
-			image.bits = 8;
-
-
-			int offset = 0;
-
-
-			int adjust = 128;
-
-			if (IsDlgButtonChecked(eApp::hWindow, PALFIX) == BST_CHECKED)
-			{
-				Log(L"Adjusting palette offset");
-				adjust = 80;
-			}
-	
-
-			pFile.seekg(baseOffset + PS2_HEADER_SIZE + (image.height * image.width) + adjust, pFile.beg);
-
-			Log(L"Palette offset: " + std::to_wstring(baseOffset + PS2_HEADER_SIZE + (image.height * image.width) + adjust));
-
-
-			std::unique_ptr<int[]> palBuff = std::make_unique<int[]>(PSP_PAL_SIZE / sizeof(pal_psp_data));
-
-			for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
-				pFile.read((char*)&palBuff[i], sizeof(int));
-	
-			
-			pFile.seekg(baseOffset + PS2_HEADER_SIZE, pFile.beg);
-
-			Log(L"Texture offset: " + std::to_wstring(baseOffset + PS2_HEADER_SIZE));
-
-			int dataSize = image.width * image.height;
-
-			std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(dataSize);
-			pFile.read(dataBuff.get(), dataSize);
-
-			std::unique_ptr<char[]> dataOut = std::make_unique<char[]>(dataSize);
-
-			outputName += L".bmp";
-
-			std::wstring output = SetSavePathFromButtonWithName(outputName, L"Bitmap Image File (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0", L"bmp", eApp::hWindow);
-
-			if (output.empty())
-				return;
-
-			std::ofstream oFile(output, std::ofstream::binary);
-
-			Unswizzlers::PS2((unsigned char*)dataOut.get(), (unsigned char*)dataBuff.get(), image);
-
-
-			// create bmp
-			bmp_header bmp;
-			bmp_info_header bmpf;
-			bmp.bfType = 'MB';
-			bmp.bfSize = dataSize;
-			bmp.bfReserved1 = 0;
-			bmp.bfReserved2 = 0;
-			bmp.bfOffBits = sizeof(bmp_header) + sizeof(bmp_info_header) + PSP_PAL_SIZE;
-			bmpf.biSize = sizeof(bmp_info_header);
-			bmpf.biWidth = image.width;
-			bmpf.biHeight = image.height;
-			bmpf.biPlanes = 1;
-			bmpf.biBitCount = image.bits;
-			bmpf.biCompression = 0;
-			bmpf.biXPelsPerMeter = 2835;
-			bmpf.biYPelsPerMeter = 2835;
-			bmpf.biClrUsed = 256;
-			bmpf.biClrImportant = 0;
-
-			// write headers
-			oFile.write((char*)&bmp, sizeof(bmp_header));
-			oFile.write((char*)&bmpf, sizeof(bmp_info_header));
-
-
-			// convert colors
-			for (int i = 0; i < 256; i++)
-			{
-				int j;
-				if ((i & 0x18) == 0x10)
-				{
-					int tmp;
-					j = i ^ 0x18;
-					tmp = palBuff[i];
-					palBuff[i] = palBuff[j];
-					palBuff[j] = tmp;
-				}
-			}
-
-
-			// write colors
-			for (int i = 0; i < 256; i++)
-			{
-				// swap rgb to bgr
-				char* ptr = (char*)&palBuff[i];
-				char red = *(char*)(ptr);
-				char blue = *(char*)(ptr + 2);
-				*(char*)(ptr) = blue;
-				*(char*)(ptr + 2) = red;
-				oFile.write((char*)&palBuff[i], sizeof(int));
-
-			}
-			for (int y = image.height - 1; y >= 0; y--)
-			{
-				for (int x = 0; x < image.width; x++)
-				{
-					oFile.write((char*)&dataOut[x + (y * image.width)], sizeof(char));
-				}
-			}
-
-			//oFile.write(dataOut.get(), dataSize);
-			Log(L"Texture " + outputName + L" saved!");
-		}
+			TextureExporter_Unchained(baseOffset, dwSel);
+		else if (m_settings.m_epPlatform == PLATFORM_PS2 && (m_settings.m_egGame == MORTAL_KOMBAT_DECEPTION || m_settings.m_egGame == MORTAL_KOMBAT_ARMAGEDDON))
+			TextureExporter_DADA(baseOffset, dwSel);
+		else if (m_settings.m_epPlatform == PLATFORM_PS2 && m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+			TextureExporter_DADA(baseOffset, dwSel);
 		else
 		{
 			MessageBox(eApp::hWindow, L"Cannot export the texture!", 0, MB_ICONWARNING);
@@ -837,9 +656,626 @@ void SSFExplorer::ExportTexture()
 	}
 }
 
-void SSFExplorer::Build()
+void SSFExplorer::ExportAllTextures(bool alpha, eOutputImageFormat img)
+{
+	if (m_settings.m_epPlatform == PLATFORM_XBOX || m_settings.m_epPlatform == PLATFORM_GC_WII)
+	{
+		MessageBox(eApp::hWindow, L"Batch export for XBOX and Wii/Gamecube is not supported", 0, MB_ICONERROR);
+		return;
+	}
+
+	if (m_settings.m_egGame == MORTAL_KOMBAT_ARMAGEDDON || m_settings.m_egGame == MORTAL_KOMBAT_DECEPTION)
+	{
+		if (m_settings.m_epPlatform == PLATFORM_PSP)
+		{
+			MessageBox(eApp::hWindow, L"Invalid platform!", 0, MB_ICONERROR);
+			return;
+		}
+	}
+
+	std::wstring folder = SetFolderFromButton(eApp::hWindow);
+
+	if (folder.empty())
+		return;
+
+	std::filesystem::current_path(folder);
+
+	DWORD dwSel = 0;
+	int texturesFound = 0;
+
+	for (unsigned int i = 0; i < Files.size(); i++)
+	{
+		section_file_entry ent = Files[i].ent;
+
+		if (ent.type == FILE_TYPE_ANIMATION_TEXTURE || ent.type == FILE_TYPE_FE_TEXTURE)
+		{
+			dwSel = i;
+			int baseOffset = Files[dwSel].ent.offset;
+
+			pFile.seekg(baseOffset, pFile.beg);
+
+			int hdr = 0;
+			pFile.read((char*)&hdr, sizeof(int));
+			if (hdr == 'SEC ')
+				break;
+
+
+			pFile.seekg(baseOffset, pFile.beg);
+
+			int flags = TE_SILENT | TE_BATCH_EXPORT;
+
+			if (alpha)
+				flags |= TE_ALPHA_CHANNEL;
+
+			if (img == OutputImage_TGA)
+				flags |= TE_TGA_EXPORT;
+
+			bool result = false;
+
+			if (m_settings.m_epPlatform == PLATFORM_PSP && m_settings.m_egGame == MORTAL_KOMBAT_UNCHAINED)
+				result = TextureExporter_Unchained(baseOffset, dwSel, flags);
+			else if (m_settings.m_epPlatform == PLATFORM_PS2 && (m_settings.m_egGame == MORTAL_KOMBAT_DECEPTION || m_settings.m_egGame == MORTAL_KOMBAT_ARMAGEDDON))
+				result = TextureExporter_DADA(baseOffset, dwSel, flags);
+			else if (m_settings.m_epPlatform == PLATFORM_PS2 && m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+				result = TextureExporter_DADA(baseOffset, dwSel, flags);
+			if (result)
+				texturesFound++;
+		}
+	}
+
+	if (texturesFound == 0)
+		MessageBox(eApp::hWindow, L"No textures found!", 0, MB_ICONERROR);
+}
+
+bool SSFExplorer::TextureExporter_Unchained(int baseOffset, DWORD dwSel, int flags)
+{
+	unsigned char len;
+	pFile.read((char*)&len, sizeof(char));
+
+
+	std::wstring outputName = Files[dwSel].name;
+
+
+	if (len > 0)
+	{
+		std::unique_ptr<char[]> text = std::make_unique<char[]>(len);
+		pFile.read(text.get(), len);
+		std::string str(text.get(), len);
+
+		std::wstring wstr(str.length(), L' ');
+		std::copy(str.begin(), str.end(), wstr.begin());
+		outputName = wstr;
+	}
+
+
+
+
+	int x = 0;
+	int y = 0;
+
+	pFile.read((char*)&x, sizeof(int));
+	pFile.read((char*)&y, sizeof(int));
+
+	if (x > 4096 || y > 4096)
+	{
+		if (!(flags & TE_SILENT))
+			MessageBox(eApp::hWindow, L"Invalid texture data, most likely not a texture file!", 0, 0);
+		return false;
+	}
+
+	image_data image;
+	image.width = x;
+	image.height = y;
+	image.bits = 8;
+
+	pFile.seekg(baseOffset + PSP_HEADER_SIZE, pFile.beg);
+
+	std::unique_ptr<pal_psp_data[]> palBuff = std::make_unique<pal_psp_data[]>(PSP_PAL_SIZE / sizeof(pal_psp_data));
+
+	for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
+		pFile.read((char*)&palBuff[i], sizeof(pal_psp_data));
+
+	pFile.seekg(baseOffset + PSP_HEADER_SIZE + PSP_PAL_SIZE, pFile.beg);
+
+	int dataSize = image.width * image.height;
+
+	std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(dataSize);
+	pFile.read(dataBuff.get(), dataSize);
+
+	std::unique_ptr<char[]> dataOut = std::make_unique<char[]>(dataSize);
+
+	std::unique_ptr<char[]> dataOutCopy = std::make_unique<char[]>(dataSize);
+
+	if (flags & TE_TGA_EXPORT)
+		outputName += L".tga";
+	else
+		outputName += L".bmp";
+
+	std::wstring output;
+
+	if (!(flags & TE_BATCH_EXPORT))
+	{
+		if (flags & TE_TGA_EXPORT)
+			output = SetSavePathFromButtonWithName(outputName, L"Truevision TGA (*.tga)\0*.tga\0All Files (*.*)\0*.*\0", L"tga", eApp::hWindow);
+		else
+			output = SetSavePathFromButtonWithName(outputName, L"Bitmap Image File (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0", L"bmp", eApp::hWindow);
+
+		if (output.empty())
+			return false;
+	}
+	else
+		output = outputName;
+
+	std::ofstream oFile(output, std::ofstream::binary);
+
+	// unswizzle
+	Unswizzlers::PSP((unsigned int*)dataOut.get(), (unsigned int*)dataBuff.get(), image);
+
+
+
+	if (flags & TE_TGA_EXPORT)
+	{
+		tga_header tga;
+		tga.imageType = 2;
+		tga.x = image.width;
+		tga.y = image.height;
+		tga.depth = 32;
+		tga.imageDescriptor = 8;
+
+		// write headers
+		oFile.write((char*)&tga, sizeof(tga_header));
+
+		for (int i = 0; i < 256; i++)
+		{
+			// swap rgb to bgr
+			char* ptr = (char*)&palBuff[i];
+			char red = *(char*)(ptr);
+			char blue = *(char*)(ptr + 2);
+			*(char*)(ptr) = blue;
+			*(char*)(ptr + 2) = red;
+
+		}
+
+		for (int y = image.height - 1; y >= 0; y--)
+		{
+			for (int x = 0; x < image.width; x++)
+			{
+				unsigned char rgb_triple[4] = {};
+				unsigned char color_id = dataOut[(x + (y * image.width))];
+				char* ptr = (char*)&palBuff[color_id];
+
+				unsigned char alpha = *(unsigned char*)(ptr + 3);
+				unsigned char outputColor = 0;
+
+				if (alpha > 0)
+				{
+					float ps2_alpha_val = alpha / 128.0f;
+					float alpha_val = 255.0f * ps2_alpha_val;
+					int alpha_int = std::clamp((int)alpha_val, 0, 255);
+
+					outputColor = alpha_int;
+				}
+				*(unsigned char*)(ptr + 3) = outputColor;
+
+				oFile.write((char*)&palBuff[color_id], sizeof(int));
+			}
+		}
+		Log(L"Texture " + outputName + L" saved!");
+	}
+	else
+	{
+		// create bmp
+		bmp_header bmp;
+		bmp_info_header bmpf;
+		bmp.bfType = 'MB';
+		bmp.bfSize = dataSize;
+		bmp.bfReserved1 = 0;
+		bmp.bfReserved2 = 0;
+		bmp.bfOffBits = sizeof(bmp_header) + sizeof(bmp_info_header) + PSP_PAL_SIZE;
+		bmpf.biSize = sizeof(bmp_info_header);
+		bmpf.biWidth = image.width;
+		bmpf.biHeight = image.height;
+		bmpf.biPlanes = 1;
+		bmpf.biBitCount = image.bits;
+		bmpf.biCompression = 0;
+		bmpf.biXPelsPerMeter = 2835;
+		bmpf.biYPelsPerMeter = 2835;
+		bmpf.biClrUsed = 256;
+		bmpf.biClrImportant = 0;
+
+		// write headers
+		oFile.write((char*)&bmp, sizeof(bmp_header));
+		oFile.write((char*)&bmpf, sizeof(bmp_info_header));
+
+		// write colors
+		for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
+		{
+			// swap red and blue
+			oFile.write((char*)&palBuff[i].b, sizeof(char));
+			oFile.write((char*)&palBuff[i].g, sizeof(char));
+			oFile.write((char*)&palBuff[i].r, sizeof(char));
+			oFile.write((char*)&palBuff[i].a, sizeof(char));
+		}
+		for (int y = image.height - 1; y >= 0; y--)
+		{
+			for (int x = 0; x < image.width; x++)
+			{
+				oFile.write((char*)&dataOut[x + (y * image.width)], sizeof(char));
+			}
+		}
+
+		Log(L"Texture " + outputName + L" saved!");
+
+		// alpha channel bmp
+
+		if (flags & TE_ALPHA_CHANNEL)
+		{
+			outputName.insert(0, L"alpha_");
+			std::ofstream alphaFile(outputName, std::ofstream::binary);
+			// create bmp
+			bmp_header bmp;
+			bmp_info_header bmpf;
+			bmp.bfType = 'MB';
+			bmp.bfSize = dataSize;
+			bmp.bfReserved1 = 0;
+			bmp.bfReserved2 = 0;
+			bmp.bfOffBits = sizeof(bmp_header) + sizeof(bmp_info_header);
+			bmpf.biSize = sizeof(bmp_info_header);
+			bmpf.biWidth = image.width;
+			bmpf.biHeight = image.height;
+			bmpf.biPlanes = 1;
+			bmpf.biBitCount = 32;
+			bmpf.biCompression = 0;
+			bmpf.biXPelsPerMeter = 2835;
+			bmpf.biYPelsPerMeter = 2835;
+			bmpf.biClrUsed = 0;
+			bmpf.biClrImportant = 0;
+
+			// write headers
+			alphaFile.write((char*)&bmp, sizeof(bmp_header));
+			alphaFile.write((char*)&bmpf, sizeof(bmp_info_header));
+
+			for (int y = image.height - 1; y >= 0; y--)
+			{
+				for (int x = 0; x < image.width; x++)
+				{
+					unsigned char rgb_triple[4] = {};
+					unsigned char color_id = dataOut[(x + (y * image.width))];
+					char* ptr = (char*)&palBuff[color_id];
+
+					unsigned char alpha = *(unsigned char*)(ptr + 3);
+					unsigned char outputColor = 0;
+
+					if (alpha > 0)
+					{
+						float ps2_alpha_val = alpha / 128.0f;
+						float alpha_val = 255.0f * ps2_alpha_val;
+						int alpha_int = std::clamp((int)alpha_val, 0, 255);
+
+						outputColor = alpha_int;
+					}
+
+
+					rgb_triple[0] = outputColor;
+					rgb_triple[1] = outputColor;
+					rgb_triple[2] = outputColor;
+
+					alphaFile.write((char*)&rgb_triple, sizeof(rgb_triple));
+				}
+			}
+			alphaFile.close();
+			Log(L"Texture Alpha " + outputName + L" saved!");
+		}
+	}
+	return true;
+}
+
+bool SSFExplorer::TextureExporter_DADA(int baseOffset, DWORD dwSel, int flags)
 {
 
+	// armageddon check
+	if (m_settings.m_egGame == MORTAL_KOMBAT_ARMAGEDDON)
+	{
+		bool isArmageddon = false;
+
+		char check[4];
+		pFile.read((char*)&check, sizeof(check));
+
+		if (check[0] == 0x00 && check[1] == 0x00 && check[2] == 0x00 && check[3] == 0x00)
+		{
+			Log(L"Armageddon texture detected!");
+			isArmageddon = true;
+		}
+
+
+
+		if (!isArmageddon)
+			pFile.seekg(baseOffset, pFile.beg);
+	}
+
+	unsigned char len;
+	pFile.read((char*)&len, sizeof(char));
+
+
+	std::wstring outputName = Files[dwSel].name;
+
+
+	if (len > 0)
+	{
+		std::unique_ptr<char[]> text = std::make_unique<char[]>(len);
+		pFile.read(text.get(), len);
+		std::string str(text.get(), len);
+
+		std::wstring wstr(str.length(), L' ');
+		std::copy(str.begin(), str.end(), wstr.begin());
+		outputName = wstr;
+	}
+
+
+	int x = 0;
+	int y = 0;
+
+	pFile.read((char*)&x, sizeof(int));
+	pFile.read((char*)&y, sizeof(int));
+
+	if (x > 4096 || y > 4096)
+	{
+		if (!(flags & TE_SILENT))
+			MessageBox(eApp::hWindow, L"Invalid texture data, most likely not a texture file!", 0, 0);
+		return false;
+	}
+
+	image_data image;
+	image.width = x;
+	image.height = y;
+	image.bits = 8;
+
+
+	int offset = 0;
+
+
+	// mostly garbage
+	pFile.seekg(160, pFile.cur);
+
+	int paletteStart = 0;
+	pFile.read((char*)&paletteStart, sizeof(int));
+
+	int adjust = paletteStart;
+
+	int palPos = baseOffset + paletteStart + PS2_PALETTE_GARBAGE_SIZE;
+
+	pFile.seekg(palPos, pFile.beg);
+
+	Log(L"Palette offset: " + std::to_wstring(palPos));
+
+
+	std::unique_ptr<int[]> palBuff = std::make_unique<int[]>(PSP_PAL_SIZE / sizeof(pal_psp_data));
+
+	for (int i = 0; i < PSP_PAL_SIZE / sizeof(pal_psp_data); i++)
+		pFile.read((char*)&palBuff[i], sizeof(int));
+
+
+	pFile.seekg(baseOffset + PS2_HEADER_SIZE, pFile.beg);
+
+
+	Log(L"Texture offset: " + std::to_wstring(baseOffset + PS2_HEADER_SIZE));
+
+	int dataSize = image.width * image.height;
+
+	std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(dataSize);
+	pFile.read(dataBuff.get(), dataSize);
+
+	std::unique_ptr<char[]> dataOut = std::make_unique<char[]>(dataSize);
+
+
+	if (flags & TE_TGA_EXPORT)
+		outputName += L".tga";
+	else
+		outputName += L".bmp";
+
+	std::wstring output;
+
+	if (!(flags & TE_BATCH_EXPORT))
+	{
+		if (flags & TE_TGA_EXPORT)
+			output = SetSavePathFromButtonWithName(outputName, L"Truevision TGA (*.tga)\0*.tga\0All Files (*.*)\0*.*\0", L"tga", eApp::hWindow);
+		else
+			output = SetSavePathFromButtonWithName(outputName, L"Bitmap Image File (*.bmp)\0*.bmp\0All Files (*.*)\0*.*\0", L"bmp", eApp::hWindow);
+
+		if (output.empty())
+			return false;
+	}
+	else
+		output = outputName;
+
+
+	std::ofstream oFile(output, std::ofstream::binary);
+
+	Unswizzlers::PS2((unsigned char*)dataOut.get(), (unsigned char*)dataBuff.get(), image);
+
+
+
+	// convert colors
+	for (int i = 0; i < 256; i++)
+	{
+		int j;
+		if ((i & 0x18) == 0x10)
+		{
+			int tmp;
+			j = i ^ 0x18;
+			tmp = palBuff[i];
+			palBuff[i] = palBuff[j];
+			palBuff[j] = tmp;
+		}
+	}
+
+	if (flags & TE_TGA_EXPORT)
+	{
+		tga_header tga;
+		tga.imageType = 2;
+		tga.x = image.width;
+		tga.y = image.height;
+		tga.depth = 32;
+		tga.imageDescriptor = 8;
+
+		// write headers
+		oFile.write((char*)&tga, sizeof(tga_header));
+
+		for (int i = 0; i < 256; i++)
+		{
+			// swap rgb to bgr
+			char* ptr = (char*)&palBuff[i];
+			char red = *(char*)(ptr);
+			char blue = *(char*)(ptr + 2);
+			*(char*)(ptr) = blue;
+			*(char*)(ptr + 2) = red;
+
+		}
+
+		for (int y = image.height - 1; y >= 0; y--)
+		{
+			for (int x = 0; x < image.width; x++)
+			{
+				unsigned char rgb_triple[4] = {};
+				unsigned char color_id = dataOut[(x + (y * image.width))];
+				char* ptr = (char*)&palBuff[color_id];
+
+				unsigned char alpha = *(unsigned char*)(ptr + 3);
+				unsigned char outputColor = 0;
+
+				if (alpha > 0)
+				{
+					float ps2_alpha_val = alpha / 128.0f;
+					float alpha_val = 255.0f * ps2_alpha_val;
+					int alpha_int = std::clamp((int)alpha_val, 0, 255);
+
+					outputColor = alpha_int;
+				}
+				*(unsigned char*)(ptr + 3) = outputColor;
+
+				oFile.write((char*)&palBuff[color_id], sizeof(int));
+			}
+		}
+		Log(L"Texture " + outputName + L" saved!");
+	}
+	else
+	{
+		// create bmp
+		bmp_header bmp;
+		bmp_info_header bmpf;
+		bmp.bfType = 'MB';
+		bmp.bfSize = dataSize;
+		bmp.bfReserved1 = 0;
+		bmp.bfReserved2 = 0;
+		bmp.bfOffBits = sizeof(bmp_header) + sizeof(bmp_info_header) + PSP_PAL_SIZE;
+		bmpf.biSize = sizeof(bmp_info_header);
+		bmpf.biWidth = image.width;
+		bmpf.biHeight = image.height;
+		bmpf.biPlanes = 1;
+		bmpf.biBitCount = image.bits;
+		bmpf.biCompression = 0;
+		bmpf.biXPelsPerMeter = 2835;
+		bmpf.biYPelsPerMeter = 2835;
+		bmpf.biClrUsed = 256;
+		bmpf.biClrImportant = 0;
+
+		// write headers
+		oFile.write((char*)&bmp, sizeof(bmp_header));
+		oFile.write((char*)&bmpf, sizeof(bmp_info_header));
+
+		// write colors
+		for (int i = 0; i < 256; i++)
+		{
+			// swap rgb to bgr
+			char* ptr = (char*)&palBuff[i];
+			char red = *(char*)(ptr);
+			char blue = *(char*)(ptr + 2);
+			*(char*)(ptr) = blue;
+			*(char*)(ptr + 2) = red;
+			oFile.write((char*)&palBuff[i], sizeof(int));
+
+		}
+		for (int y = image.height - 1; y >= 0; y--)
+		{
+			for (int x = 0; x < image.width; x++)
+			{
+				oFile.write((char*)&dataOut[x + (y * image.width)], sizeof(char));
+			}
+		}
+
+
+
+
+		Log(L"Texture " + outputName + L" saved!");
+
+		// alpha channel bmp
+
+		if (flags & TE_ALPHA_CHANNEL)
+		{
+			outputName.insert(0, L"alpha_");
+			std::ofstream alphaFile(outputName, std::ofstream::binary);
+			// create bmp
+			bmp_header bmp;
+			bmp_info_header bmpf;
+			bmp.bfType = 'MB';
+			bmp.bfSize = dataSize;
+			bmp.bfReserved1 = 0;
+			bmp.bfReserved2 = 0;
+			bmp.bfOffBits = sizeof(bmp_header) + sizeof(bmp_info_header);
+			bmpf.biSize = sizeof(bmp_info_header);
+			bmpf.biWidth = image.width;
+			bmpf.biHeight = image.height;
+			bmpf.biPlanes = 1;
+			bmpf.biBitCount = 32;
+			bmpf.biCompression = 0;
+			bmpf.biXPelsPerMeter = 2835;
+			bmpf.biYPelsPerMeter = 2835;
+			bmpf.biClrUsed = 0;
+			bmpf.biClrImportant = 0;
+
+			// write headers
+			alphaFile.write((char*)&bmp, sizeof(bmp_header));
+			alphaFile.write((char*)&bmpf, sizeof(bmp_info_header));
+
+			for (int y = image.height - 1; y >= 0; y--)
+			{
+				for (int x = 0; x < image.width; x++)
+				{
+					unsigned char rgb_triple[4] = {};
+					unsigned char color_id = dataOut[(x + (y * image.width))];
+					char* ptr = (char*)&palBuff[color_id];
+
+					unsigned char alpha = *(unsigned char*)(ptr + 3);
+					unsigned char outputColor = 0;
+
+					if (alpha > 0)
+					{
+						float ps2_alpha_val = alpha / 128.0f;
+						float alpha_val = 255.0f * ps2_alpha_val;
+						int alpha_int = std::clamp((int)alpha_val, 0, 255);
+
+						outputColor = alpha_int;
+					}
+
+
+					rgb_triple[0] = outputColor;
+					rgb_triple[1] = outputColor;
+					rgb_triple[2] = outputColor;
+
+					alphaFile.write((char*)&rgb_triple, sizeof(rgb_triple));
+				}
+			}
+			alphaFile.close();
+			Log(L"Texture Alpha " + outputName + L" saved!");
+		}
+	}
+
+	
+	return true;
+}
+
+void SSFExplorer::Build()
+{
 	bool failedBuild = false;	
 
 	HWND hPathBox = GetDlgItem(eApp::hWindow, SSF_BUILD_FILE);
@@ -864,6 +1300,9 @@ void SSFExplorer::Build()
 
 
 	m_bFighterFix = IsDlgButtonChecked(eApp::hWindow, SSF_FIGHTER_FIX);
+
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+		m_bFighterFix = false;
 
 	Log(L"Saving header");
 
@@ -933,7 +1372,14 @@ void SSFExplorer::Build()
 
 	}
 	else
-		m_secHeader.fileSize += makePad(sizeof(section_file_header), DEFAULT_SSF_PADSIZE);
+	{
+		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+			m_secHeader.fileSize += makePad(sizeof(section_file_header_da), DEFAULT_SSF_PADSIZE);
+		else
+			m_secHeader.fileSize += makePad(sizeof(section_file_header), DEFAULT_SSF_PADSIZE);
+
+	}
+
 
 	if (m_settings.m_epPlatform == PLATFORM_GC_WII)
 	{
@@ -948,7 +1394,14 @@ void SSFExplorer::Build()
 		changeEndINT(&m_secHeader.version);
 	}
 
-	oFile.write((char*)&m_secHeader, sizeof(section_file_header));
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+	{
+		section_file_header_da header = D2DA_Header(m_secHeader);
+		header.unknown = m_nUnknownDA;
+		oFile.write((char*)&header, sizeof(section_file_header_da));
+	}
+	else
+		oFile.write((char*)&m_secHeader, sizeof(section_file_header));
 
 	int baseOffset = DEFAULT_SSF_PADSIZE;
 	int stringsSize = 0;
@@ -959,6 +1412,8 @@ void SSFExplorer::Build()
 
 	int headerSize = sizeof(section_file_header) + (sizeof(section_file_entry) * Files.size()) + stringsSize;
 
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+		headerSize = sizeof(section_file_header_da) + (sizeof(section_file_entry_da) * Files.size()) + stringsSize;
 
 	int padOffset = makePad(headerSize, SEC_PADSIZE) - headerSize;
 
@@ -1008,7 +1463,13 @@ void SSFExplorer::Build()
 		}
 
 
-		oFile.write((char*)&Files[i].ent, sizeof(section_file_entry));
+		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+		{
+			section_file_entry_da ent = D2DA_Entry(Files[i].ent);
+			oFile.write((char*)&ent, sizeof(section_file_entry_da));
+		}
+		else
+			oFile.write((char*)&Files[i].ent, sizeof(section_file_entry));
 
 		if (m_bUsesFilenames)
 			baseOffset += std::filesystem::file_size(Files[i].name);
@@ -1018,8 +1479,8 @@ void SSFExplorer::Build()
 	}
 
 	int padSize = makePad(sizeof(section_file_header), DEFAULT_SSF_PADSIZE) - sizeof(section_file_header) - (sizeof(section_file_entry) * Files.size());
-
-
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+		padSize = makePad(sizeof(section_file_header_da), DEFAULT_SSF_PADSIZE) - sizeof(section_file_header_da) - (sizeof(section_file_entry_da) * Files.size());
 	bool needsToSaveOriginalPad = false;
 
 	if (m_bUsesFilenames)
@@ -1059,7 +1520,7 @@ void SSFExplorer::Build()
 	{
 		Log(L"Saving: " + Files[i].name);
 		std::ifstream pInput(Files[i].name, std::ifstream::binary);
-		int size = std::filesystem::file_size(Files[i].name);
+		int size = static_cast<int>(std::filesystem::file_size(Files[i].name));
 
 		std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(size);
 		pInput.read(dataBuff.get(), size);
@@ -1073,17 +1534,89 @@ void SSFExplorer::Build()
 
 		if (!m_bUsesFilenames)
 		{
-			int pad_size = makePad(std::filesystem::file_size(Files[i].name), 2048);
+			int pad_size = makePad(static_cast<int>(std::filesystem::file_size(Files[i].name)), DEFAULT_SSF_PADSIZE);
 
 			pad = std::make_unique<char[]>(pad_size - size);
 			oFile.write(pad.get(), pad_size - size);
 		}
+		pInput.close();
 
 
 	}
 
 	MessageBox(0, L"Done!", L"Information", MB_ICONINFORMATION);
 
+}
+
+void SSFExplorer::ExtractPAK()
+{
+	std::wstring file = SetPathFromButton(L"MK PS2 PAK archive (*.pak)\0*.pak\0All Files (*.*)\0*.*\0", L"pak", eApp::hWindow);
+	
+	pFile.open(file, std::ifstream::binary);
+
+	if (!pFile.is_open())
+	{
+		MessageBox(eApp::hWindow, L"Failed to open file!", L"Error", MB_ICONERROR);
+		return;
+	}
+
+	pak_header pak;
+	pFile.read((char*)&pak, sizeof(pak_header));
+	if (!(pak.header == 'PAK '))
+	{
+		MessageBox(eApp::hWindow, L"Input file is not a valid MK PAK archive!", L"Error", MB_ICONERROR);
+		return;
+	}
+
+	std::wstring folder = SetFolderFromButton(eApp::hWindow);
+
+	if (folder.empty())
+		return;
+
+	std::filesystem::current_path(folder);
+
+	pFile.seekg(pak.filesOffset, pFile.beg);
+
+	std::vector<pak_entry> Files;
+	std::vector<std::string> Names;
+
+	for (int i = 0; i < pak.files; i++)
+	{
+		pak_entry pak;
+		pFile.read((char*)&pak, sizeof(pak_entry));
+		Files.push_back(pak);
+	}
+
+	for (int i = 0; i < pak.files; i++)
+	{
+		pFile.seekg(pak.filesOffset + (sizeof(pak_entry) * pak.files), pFile.beg);
+		pFile.seekg(Files[i].stringOffset, pFile.cur);
+
+		std::string name;
+		std::getline(pFile, name, '\0');
+		// removes \ from start
+		name.erase(0, 1);
+		Names.push_back(name);
+	}
+
+	Log(L"Files: " + std::to_wstring(pak.files));
+	for (int i = 0; i < pak.files; i++)
+	{
+		Log(L"Processing file: " + std::to_wstring(i + 1)  + L"/" + std::to_wstring(pak.files));
+		pFile.seekg(Files[i].offset, pFile.beg);
+
+		int dataSize = Files[i].size;
+		std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(dataSize);
+		pFile.read(dataBuff.get(), dataSize);
+
+		std::filesystem::create_directories(splitString(Names[i], false));
+
+		std::ofstream oFile(Names[i], std::ofstream::binary);
+		oFile.write(dataBuff.get(), dataSize);
+
+	}
+	Log(L"Finished.");
+	pFile.close();
 }
 
 void SSFExplorer::Close()
