@@ -1551,7 +1551,10 @@ void SSFExplorer::Build()
 void SSFExplorer::ExtractPAK()
 {
 	std::wstring file = SetPathFromButton(L"MK PS2 PAK archive (*.pak)\0*.pak\0All Files (*.*)\0*.*\0", L"pak", eApp::hWindow);
-	
+
+	if (file.empty())
+		return;
+
 	pFile.open(file, std::ifstream::binary);
 
 	if (!pFile.is_open())
