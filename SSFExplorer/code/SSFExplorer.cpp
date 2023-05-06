@@ -39,6 +39,7 @@ void SSFExplorer::ReadSettings()
 		m_settings.m_bFirstRun = reader.ReadBoolean(L"Settings", L"bFirstRun", false);
 		m_settings.m_egGame = (eGames)reader.ReadInteger(L"Settings", L"game", GAME_NULL);
 		m_settings.m_epPlatform = (ePlatforms)reader.ReadInteger(L"Settings", L"platform", PLATFORM_PS2);
+		m_settings.m_bGuessExtensions = reader.ReadBoolean(L"Settings", L"guess_extensions", false);
 	}
 	else
 	{
@@ -172,16 +173,6 @@ void SSFExplorer::ReadFile_D()
 
 	for (unsigned int i = 0; i < Files.size(); i++)
 		Log(L"Size: " + std::to_wstring(Files[i].ent.size) + L" Type: " + std::to_wstring(Files[i].ent.type));
-
-	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-	{
-		if (sec.stringSize <= NO_STRING_DATA)
-		{
-			MessageBox(eApp::hWindow, L"Deadly Alliance subarchives are not supported!", L"Error", MB_ICONERROR);
-			return;
-		}
-
-	}
 
 
 	if (sec.stringSize >= NO_STRING_DATA || sec.stringSize <= 20)
@@ -545,13 +536,30 @@ void SSFExplorer::ExtractAll()
 
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
-		std::ofstream oFile(Files[i].name, std::ofstream::binary);
+		std::wstring name = Files[i].name;
+
+
+		if (m_settings.m_bGuessExtensions)
+		{
+			switch (Files[i].ent.type)
+			{
+			case FILE_TYPE_MODEL:
+				name += L".dff";
+				break;
+			case FILE_TYPE_ANIMATION:
+				name += L".mka";
+				break;
+			default:
+				break;
+			}
+		}
+		std::ofstream oFile(name, std::ofstream::binary);
 		std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(Files[i].ent.size);
 		pFile.seekg(Files[i].ent.offset, pFile.beg);
 		pFile.read(dataBuff.get(), Files[i].ent.size);
 		oFile.write(dataBuff.get(), Files[i].ent.size);
 
-		Log(L"File: " + Files[i].name + L" extracted!");
+		Log(L"File: " + name + L" extracted!");
 	}
 
 
@@ -673,6 +681,12 @@ void SSFExplorer::ExportAllTextures(bool alpha, eOutputImageFormat img)
 		}
 	}
 
+	if (m_secHeader.stringSize >= NO_STRING_DATA || m_secHeader.stringSize <= 20)
+	{
+		MessageBox(eApp::hWindow, L"Primary archives (.ssf) usually don't have any textures.", 0, MB_ICONERROR);
+		return;
+	}
+
 	std::wstring folder = SetFolderFromButton(eApp::hWindow);
 
 	if (folder.empty())
@@ -776,6 +790,9 @@ bool SSFExplorer::TextureExporter_Unchained(int baseOffset, DWORD dwSel, int fla
 		pFile.read((char*)&palBuff[i], sizeof(pal_psp_data));
 
 	pFile.seekg(baseOffset + PSP_HEADER_SIZE + PSP_PAL_SIZE, pFile.beg);
+
+	Log(L"Palette offset: " + std::to_wstring(baseOffset + PSP_HEADER_SIZE));
+	Log(L"Texture offset: " + std::to_wstring(baseOffset + PSP_HEADER_SIZE + PSP_PAL_SIZE));
 
 	int dataSize = image.width * image.height;
 
@@ -1510,6 +1527,9 @@ void SSFExplorer::Build()
 	}
 
 
+	if (padSize < 0)
+		padSize = 0;
+
 	std::unique_ptr<char[]> pad = std::make_unique<char[]>(padSize);
 
 	if (!m_bFighterFix)
@@ -1647,8 +1667,6 @@ void SSFExplorer::AddData(std::wstring msg)
 {
 	PushLogMessage(*hDataBox, msg);
 }
-
-
 
 std::wstring SetPathFromButton(wchar_t* filter, wchar_t* ext, HWND hWnd)
 {

@@ -255,6 +255,7 @@ void eApp::ReadSettings()
 		tmpSettings.m_bFirstRun = reader.ReadBoolean(L"Settings", L"bFirstRun", false);
 		tmpSettings.m_egGame = (eGames)reader.ReadInteger(L"Settings", L"Game", MORTAL_KOMBAT_UNCHAINED);
 		tmpSettings.m_epPlatform = (ePlatforms)reader.ReadInteger(L"Settings", L"Platform", PLATFORM_PS2);
+		tmpSettings.m_bGuessExtensions = reader.ReadBoolean(L"Settings", L"guess_extensions", false);
 	}
 	else
 	{
@@ -276,6 +277,7 @@ void eApp::SaveSettings()
 	ini << "bFirstRun = " << tmpSettings.m_bFirstRun << std::endl;
 	ini << "game = " << tmpSettings.m_egGame << std::endl;
 	ini << "platform = " << tmpSettings.m_epPlatform << std::endl;
+	ini << "guess_extensions = " << tmpSettings.m_bGuessExtensions << std::endl;
 	ini.close();
 }
 

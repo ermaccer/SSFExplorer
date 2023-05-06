@@ -50,6 +50,7 @@ struct ssfexplorer_settings {
 	bool   m_bFirstRun;
 	eGames m_egGame;
 	ePlatforms m_epPlatform;
+	bool   m_bGuessExtensions;
 
 };
 
