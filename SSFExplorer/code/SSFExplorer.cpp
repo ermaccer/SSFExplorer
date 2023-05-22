@@ -605,7 +605,6 @@ void SSFExplorer::Export()
 	std::wofstream cfg(folderName + L"_list.cfg", std::ofstream::binary);
 	folderName += L"_files";
 
-	cfg << "; cfg file to generate ini from - use for mass edits" << std::endl;
 	cfg << folderName.c_str() << std::endl;
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
