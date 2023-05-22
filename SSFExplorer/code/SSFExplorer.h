@@ -114,6 +114,7 @@ public:
 	void Build();
 
 	void ExtractPAK();
+	void ConvertCFGToINI();
 
 	void Close();
 	void Log(std::wstring msg);

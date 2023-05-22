@@ -578,7 +578,7 @@ void SSFExplorer::Export()
 	// make ini
 	folderName = folderName.substr(0, folderName.length() - 4);
 	std::wofstream ini(folderName + L".ini", std::ofstream::binary);
-	folderName += L"_files";
+
 
 	ini << L"[Build.Settings]\n";
 	ini << L"Files = " << m_secHeader.files << std::endl;
@@ -601,6 +601,21 @@ void SSFExplorer::Export()
 	}
 	Log(L"INI file created!");
 	ini.close();
+
+	std::wofstream cfg(folderName + L"_list.cfg", std::ofstream::binary);
+	folderName += L"_files";
+
+	cfg << "; cfg file to generate ini from - use for mass edits" << std::endl;
+	cfg << folderName.c_str() << std::endl;
+	for (unsigned int i = 0; i < Files.size(); i++)
+	{
+		cfg << std::to_wstring(Files[i].ent.type) << L" " << Files[i].name << std::endl;
+	}
+
+	Log(L"CFG (U/D/A) file created!");
+	cfg.close();
+
+
 
 	std::filesystem::create_directory(folderName);
 
@@ -1338,6 +1353,12 @@ void SSFExplorer::Build()
 
 	Log(path);
 
+	if (!std::filesystem::exists(path))
+	{
+		MessageBox(eApp::hWindow, L"Files path error! Check if the folder exists.", 0, MB_ICONERROR);
+		return;
+	}
+
 	std::filesystem::current_path(path);
 
 	for (unsigned int i = 0; i < Files.size(); i++)
@@ -1640,6 +1661,90 @@ void SSFExplorer::ExtractPAK()
 	}
 	Log(L"Finished.");
 	pFile.close();
+}
+
+void SSFExplorer::ConvertCFGToINI()
+{
+	std::wstring file = SetPathFromButton(L"CFG List File (*.cfg)\0*.cfg\0All Files (*.*)\0*.*\0", L"cfg", eApp::hWindow);
+
+	if (file.empty())
+		return;
+
+
+	FILE* pFile = _wfopen(file.c_str(), L"rb");
+
+	if (!pFile)
+	{
+		MessageBox(eApp::hWindow, L"Failed to open file!", L"Error", MB_ICONERROR);
+		return;
+	}
+
+
+	std::wstring output = SetSavePathFromButtonWithName(L"list.ini", L"Configuration File\0*.ini\0All Files (*.*)\0*.*\0", L"ini", eApp::hWindow);
+
+	if (output.empty())
+		return;
+
+	std::vector<int> types;
+	std::vector<std::string> names;
+
+
+	char szLine[2048] = {};
+
+
+	std::wstring folder;
+
+	{
+		char folderName[512] = {};
+		fgets(folderName, sizeof(folderName), pFile);
+		std::string str(folderName, strlen(folderName));
+		std::wstring wstr(str.length(), L' ');
+		std::copy(str.begin(), str.end(), wstr.begin());
+		folder = wstr;
+	}
+
+
+
+	while (fgets(szLine, sizeof(szLine), pFile))
+	{
+		if (szLine[0] == ';' || szLine[0] == '#' || szLine[0] == '\n')
+			continue;
+
+		int type;
+		char name[128] = {};
+		sscanf(szLine, "%d %s", &type, name);
+
+		std::string str(name);
+		types.push_back(type);
+		names.push_back(str);
+	}
+
+	std::wofstream ini(output, std::ofstream::binary);
+
+
+	Log(L"Files: " + std::to_wstring(types.size()));
+	ini << L"[Build.Settings]\n";
+	ini << L"Files = " << types.size() << std::endl;
+	ini << L"UsesFilenames = " << true << std::endl;
+	ini << L"Folder = " << folder << std::endl << std::endl;
+
+
+	for (unsigned int i = 0; i < types.size(); i++)
+	{
+		ini << L"[File" + std::to_wstring(i) + L"]" << std::endl;
+		ini << L"Type = " + std::to_wstring(types[i]) << std::endl;
+
+		std::string str(names[i].c_str(), strlen(names[i].c_str()));
+		std::wstring wstr(str.length(), L' ');
+		std::copy(str.begin(), str.end(), wstr.begin());
+
+		ini << L"Name = " + wstr << std::endl;
+	}
+	Log(L"INI list file created!");
+	ini.close();
+
+	Log(L"Finished.");
+
 }
 
 void SSFExplorer::Close()

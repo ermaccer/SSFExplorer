@@ -142,9 +142,14 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 			pSSFExplorer->Init(&hLog, &hList, &hDataBox);
 			pSSFExplorer->ExtractPAK();
 			delete pSSFExplorer;
-
 		}
-
+		if (LOWORD(wParam) == ID_TOOLS_CFGTOINI)
+		{
+			pSSFExplorer = new SSFExplorer();
+			pSSFExplorer->Init(&hLog, &hList, &hDataBox);
+			pSSFExplorer->ConvertCFGToINI();
+			delete pSSFExplorer;
+		}
 		if (wParam == IDM_ABOUT)
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hDlg, About);
 
