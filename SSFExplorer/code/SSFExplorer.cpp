@@ -589,7 +589,7 @@ void SSFExplorer::Export()
 		ini << L"IsDA = 1" << std::endl;
 		ini << L"UnknownDA = " << m_nUnknownDA << std::endl;
 	}
-
+	folderName += L"_files";
 
 	ini << L"Folder = " << folderName.c_str() << std::endl << std::endl;
 
@@ -603,7 +603,7 @@ void SSFExplorer::Export()
 	ini.close();
 
 	std::wofstream cfg(folderName + L"_list.cfg", std::ofstream::binary);
-	folderName += L"_files";
+
 
 	cfg << folderName.c_str() << std::endl;
 	for (unsigned int i = 0; i < Files.size(); i++)
