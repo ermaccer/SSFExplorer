@@ -1,0 +1,13 @@
+goro_alt.sec
+goro_alt_ap.sec
+goro.mko
+sh_goro.sec
+fight_fx.mko
+blood_fx.mko
+goro_fx.mko
+shokan.mko
+goro_gauntlets.mko
+goro_alt_anims.sec
+shokan_anims.sec
+goro_gauntlets_anims.sec
+caf_goro_anims.sec

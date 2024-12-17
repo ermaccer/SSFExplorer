@@ -1,0 +1,13 @@
+sindel_alt.sec
+sindel_alt_ap.sec
+sindel.mko
+sh_sindel.sec
+fight_fx.mko
+blood_fx.mko
+sindel_fx.mko
+zhachuan.mko
+kwan_do.mko
+sindel_alt_anims.sec
+caf_sindel_anims.sec
+zhachuan_anims.sec
+kwan_do_anims.sec

@@ -1,0 +1,13 @@
+shangtsung_alt.sec
+shangtsung_alt_ap.sec
+sh_shangtsung.sec
+shangtsung.mko
+shangtsung_fx.mko
+blood_fx.mko
+fight_fx.mko
+snake.mko
+ssword.mko
+shangtsung_alt_anims.sec
+caf_shangtsung_anims.sec
+snake_anims.sec
+ssword_anims.sec

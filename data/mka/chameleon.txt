@@ -1,0 +1,13 @@
+chameleon.sec
+chameleon_ap.sec
+sh_chameleon.sec
+chameleon.mko
+blood_fx.mko
+fight_fx.mko
+chameleon_fx.mko
+crane.mko
+ninjasword.mko
+chameleon_anims.sec
+caf_chameleon_anims.sec
+crane_anims.sec
+ninjasword_anims.sec

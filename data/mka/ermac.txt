@@ -1,0 +1,14 @@
+ermac.sec
+ermac_ap.sec
+sh_ermac.sec
+ermac.mko
+fight_fx.mko
+blood_fx.mko
+ermac_fx.mko
+magic_glow_green_fx.mko
+choyleefut.mko
+axe.mko
+ermac_anims.sec
+caf_ermac_anims.sec
+choyleefut_anims.sec
+axe_anims.sec

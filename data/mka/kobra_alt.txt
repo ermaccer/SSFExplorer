@@ -1,0 +1,13 @@
+kobra_alt.sec
+kobra_alt_ap.sec
+kobra.mko
+sh_kobra.sec
+blood_fx.mko
+fight_fx.mko
+kobra_fx.mko
+kickboxing.mko
+machete.mko
+kobra_alt_anims.sec
+caf_kobra_anims.sec
+kickboxing_anims.sec
+machete_anims.sec

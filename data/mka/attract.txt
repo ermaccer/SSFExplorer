@@ -1,0 +1,9 @@
+attract.sec
+uk_legal_screen.sec
+uk_legal_screen_spa.sec
+uk_legal_screen_ger.sec
+uk_legal_screen_fre.sec
+uk_legal_screen_ita.sec
+demo_logo.sec
+usa_ce_legal_screen.sec
+usa_legal_screen.sec

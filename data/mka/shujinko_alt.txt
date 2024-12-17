@@ -1,0 +1,13 @@
+shujinko_alt.sec
+shujinko_alt_ap.sec
+sh_shujinko.sec
+shujinko.mko
+fight_fx.mko
+blood_fx.mko
+shujinko_fx.mko
+mantis.mko
+sj_katana.mko
+shujinko_alt_anims.sec
+caf_shujinko_anims.sec
+mantis_anims.sec
+sj_katana_anims.sec

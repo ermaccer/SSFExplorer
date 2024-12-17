@@ -1,0 +1,13 @@
+kintaro.sec
+kintaro_ap.sec
+kintaro.mko
+sh_kintaro.sec
+fight_fx.mko
+blood_fx.mko
+kintaro_fx.mko
+shokan_two.mko
+saber_teeth.mko
+kintaro_anims.sec
+shokan_two_anims.sec
+saber_teeth_anims.sec
+caf_kintaro_anims.sec

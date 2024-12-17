@@ -1,0 +1,13 @@
+cyrax.sec
+cyrax_ap.sec
+sh_cyrax.sec
+cyrax.mko
+blood_fx.mko
+fight_fx.mko
+cyrax_fx.mko
+ninjitsu.mko
+pulseblade.mko
+cyrax_anims.sec
+caf_cyrax_anims.sec
+ninjitsu_anims.sec
+pulseblade_anims.sec

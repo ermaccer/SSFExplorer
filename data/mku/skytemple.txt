@@ -1,0 +1,7 @@
+skytemple.mko
+skytemple.sec
+skytemple_fx.mko
+warhammer.mko
+style_war_hammer.sec
+skytemple_anims.sec
+warhammer_anims.sec

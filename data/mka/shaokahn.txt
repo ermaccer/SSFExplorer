@@ -1,0 +1,13 @@
+shaokahn.sec
+shaokahn_ap.sec
+shaokahn.mko
+sh_shaokahn.sec
+fight_fx.mko
+blood_fx.mko
+shaokahn_fx.mko
+shk_1.mko
+shk_ham.mko
+shaokahn_anims.sec
+caf_shaokahn_anims.sec
+shk_1_anims.sec
+shk_ham_anims.sec

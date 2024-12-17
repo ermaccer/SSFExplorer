@@ -1,0 +1,11 @@
+dragonking.sec
+dragonking_ap.sec
+dragonking.mko
+sh_dragonking.sec
+fight_fx.mko
+blood_fx.mko
+dragonking_fx.mko
+s_dragonking.mko
+dragonking_anims.sec
+caf_dk_anims.sec
+s_dragonking_anims.sec

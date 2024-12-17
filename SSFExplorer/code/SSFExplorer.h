@@ -43,6 +43,7 @@ enum ePlatforms {
 struct file_entry {
 	std::wstring       name;
 	section_file_entry ent;
+	int extraPad;
 };
 
 
@@ -84,6 +85,8 @@ public:
 
 	ssfexplorer_settings m_settings;
 
+	SSFExplorer();
+
 	void         Init(HWND* log, HWND* list, HWND* box);
 
 	void		 ReadSettings();
@@ -112,6 +115,7 @@ public:
 
 
 	void Build();
+	bool IsSizeSafeToPad(int size);
 
 	void ExtractPAK();
 	void ConvertCFGToINI();

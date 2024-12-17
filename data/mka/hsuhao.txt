@@ -1,0 +1,13 @@
+hsuhao.sec
+hsuhao_ap.sec
+sh_hsuhao.sec
+hsuhao.mko
+blood_fx.mko
+fight_fx.mko
+hsuhao_fx.mko
+sumo.mko
+sunmoon.mko
+hsuhao_anims.sec
+caf_hsuhao_anims.sec
+sumo_anims.sec
+sunmoon_anims.sec

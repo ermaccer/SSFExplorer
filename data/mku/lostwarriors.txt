@@ -1,0 +1,4 @@
+lostwarriors.mko
+lostwarriors.sec
+lostwarriors_fx.mko
+lostwarriors_anims.sec

@@ -1,0 +1,17 @@
+mkchess_ingame_art.sec
+mkchess_ingame_art_spa.sec
+mkchess_ingame_art_ger.sec
+mkchess_ingame_art_fre.sec
+mkchess_ingame_art_ita.sec
+mkchess_game_over.sec
+mkchess_game_over_spa.sec
+mkchess_game_over_ger.sec
+mkchess_game_over_fre.sec
+mkchess_game_over_ita.sec
+boardgame_strings_eng.mko
+boardgame_strings_spa.mko
+boardgame_strings_ger.mko
+boardgame_strings_fre.mko
+boardgame_strings_ita.mko
+boardgame_strings_eng_uk.mko
+mkchess_ingame_anims.sec

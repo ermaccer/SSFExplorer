@@ -1,0 +1,13 @@
+kitana_alt.sec
+kitana_alt_ap.sec
+sh_kitana.sec
+kitana.mko
+blood_fx.mko
+fight_fx.mko
+kitana_fx.mko
+bagua.mko
+steelfan.mko
+kitana_anims.sec
+caf_kitana_anims.sec
+bagua_anims.sec
+steelfan_anims.sec

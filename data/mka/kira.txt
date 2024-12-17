@@ -1,0 +1,13 @@
+kira.sec
+kira_ap.sec
+kira.mko
+blood_fx.mko
+fight_fx.mko
+kira_fx.mko
+sh_kira.sec
+yuanyang.mko
+dragon_teeth.mko
+yuanyang_anims.sec
+dragon_teeth_anims.sec
+kira_anims.sec
+caf_kira_anims.sec

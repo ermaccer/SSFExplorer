@@ -1,0 +1,13 @@
+jade_alt.sec
+jade_alt_ap.sec
+jade.mko
+sh_jade.sec
+fight_fx.mko
+blood_fx.mko
+jade_fx.mko
+fan_zi.mko
+j_staff.mko
+jade_alt_anims.sec
+caf_jade_anims.sec
+fan_zi_anims.sec
+j_staff_anims.sec

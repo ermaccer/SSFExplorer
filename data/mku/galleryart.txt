@@ -1,0 +1,14 @@
+krypt_thumbs.sec
+ending_thumbs.sec
+kryptdata.bin
+kryptdata_sp.bin
+kryptdata_gr.bin
+kryptdata_fr.bin
+kryptdata_it.bin
+kryptdata_en.bin
+konquestdata.bin
+konquestdata_sp.bin
+konquestdata_gr.bin
+konquestdata_fr.bin
+konquestdata_it.bin
+konquestdata_en.bin

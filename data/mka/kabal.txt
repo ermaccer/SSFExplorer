@@ -1,0 +1,13 @@
+kabal.sec
+kabal_ap.sec
+kabal.mko
+sh_kabal.sec
+fight_fx.mko
+blood_fx.mko
+kabal_fx.mko
+sunbin.mko
+k_hookswords.mko
+kabal_anims.sec
+caf_kabal_anims.sec
+sunbin_anims.sec
+k_hookswords_anims.sec

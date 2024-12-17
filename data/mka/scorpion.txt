@@ -1,0 +1,13 @@
+scorpion.sec
+scorpion_ap.sec
+sh_scorpion.sec
+scorpion.mko
+fight_fx.mko
+blood_fx.mko
+scorpion_fx.mko
+hapkido.mko
+mugai_ryu.mko
+scorpion_anims.sec
+caf_scorpion_anims.sec
+hapkido_anims.sec
+mugai_ryu_anims.sec

@@ -1,0 +1,13 @@
+rain_alt.sec
+rain_alt_ap.sec
+rain.mko
+sh_rain.sec
+blood_fx.mko
+fight_fx.mko
+rain_fx.mko
+storm_sword.mko
+zi_ran_men.mko
+rain_alt_anims.sec
+caf_rain_anims.sec
+storm_sword_anims.sec
+zi_ran_men_anims.sec

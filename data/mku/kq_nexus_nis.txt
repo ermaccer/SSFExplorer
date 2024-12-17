@@ -1,0 +1,14 @@
+kq_nexus_nis.sec
+nexus_nis.mko
+nexus_fx.mko
+unlock_screen.sec
+nx1_dialog_text.mko
+nx1_dialog_text_spa.mko
+nx1_dialog_text_ger.mko
+nx1_dialog_text_fre.mko
+nx1_dialog_text_ita.mko
+nx1_dialog_text_eng_uk.mko
+nx1_nis_1_anims.sec
+nx1_nis_1_50_anims.sec
+nx1_nis_1b_anims.sec
+nx1_nis_1b_50_anims.sec

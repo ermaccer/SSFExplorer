@@ -1,0 +1,13 @@
+nightwolf_alt.sec
+nightwolf_alt_ap.sec
+nightwolf.mko
+sh_nightwolf.sec
+fight_fx.mko
+blood_fx.mko
+nightwolf_fx.mko
+val_tudo.mko
+tomahawks.mko
+nightwolf_alt_anims.sec
+caf_nightwolf_anims.sec
+val_tudo_anims.sec
+tomahawks_anims.sec

@@ -1,0 +1,8 @@
+reddragon.mko
+reddragon.sec
+reddragon_fx.mko
+rd_sword.mko
+style_rd_sword.sec
+reddragon_anims.sec
+rd_sword_anims.sec
+reddragon_50_anims.sec

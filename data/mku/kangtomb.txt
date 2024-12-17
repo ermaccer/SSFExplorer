@@ -1,0 +1,5 @@
+kangtomb.mko
+kangtomb.sec
+kang_sword.mko
+style_kang_sword.sec
+kang_sword_anims.sec

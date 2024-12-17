@@ -22,7 +22,7 @@ int              eApp::nGameMode;
 ssfexplorer_settings eApp::tmpSettings;
 
 
-SSFExplorer*  eApp::pSSFExplorer;
+SSFExplorer* eApp::pSSFExplorer;
 
 
 INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -90,7 +90,6 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 		hDataBox = GetDlgItem(hDlg, SSF_DATA_BOX);
 		PushLogMessage(hList, L"SSF Explorer v" + (std::wstring)SSF_EXPLORER_VERSION + L" ready!");
 		hMenu = GetMenu(hDlg);
-		pSSFExplorer = new SSFExplorer();
 		pSSFExplorer->ReadSettings();
 		hicon = LoadImage(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDI_SSFEXPLORER), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR | LR_DEFAULTSIZE);
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hicon);
@@ -108,14 +107,12 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 
 		if (LOWORD(wParam) == ID_FILE_OPEN)
 		{
-			pSSFExplorer = new SSFExplorer();
 			pSSFExplorer->Init(&hLog, &hList,&hDataBox);
 			pSSFExplorer->OpenFile(SetPathFromButton(L"(Super) Section File (*.ssf)(*.sec)\0*.ssf;*.sec\0Unknown (.dat)\0*.dat;All Files (*.*)\0*.*\0", L"ssf", hDlg));
 		}
 
 		if (LOWORD(wParam) == ID_FILE_OPENINI)
 		{
-			pSSFExplorer = new SSFExplorer();
 			pSSFExplorer->Init(&hLog, &hList, &hDataBox);
 			pSSFExplorer->OpenINI(SetPathFromButton(L"Configuration File\0*.ini\0All Files (*.*)\0*.*\0", L"ini", hDlg));
 		}
@@ -138,17 +135,13 @@ INT_PTR CALLBACK eApp::Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 			pSSFExplorer->ExportAllTextures(true, OutputImage_TGA);
 		if (LOWORD(wParam) == ID_TOOLS_MKDA)
 		{
-			pSSFExplorer = new SSFExplorer();
 			pSSFExplorer->Init(&hLog, &hList, &hDataBox);
 			pSSFExplorer->ExtractPAK();
-			delete pSSFExplorer;
 		}
 		if (LOWORD(wParam) == ID_TOOLS_CFGTOINI)
 		{
-			pSSFExplorer = new SSFExplorer();
 			pSSFExplorer->Init(&hLog, &hList, &hDataBox);
 			pSSFExplorer->ConvertCFGToINI();
-			delete pSSFExplorer;
 		}
 		if (wParam == IDM_ABOUT)
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hDlg, About);
@@ -325,6 +318,6 @@ void eApp::UpdateGameChange()
 
 void eApp::Begin()
 {
-	pSSFExplorer = nullptr;
+	pSSFExplorer = new SSFExplorer();
 	DialogBox(hInst, MAKEINTRESOURCE(IDD_SSF_EXPLORER), 0, Process);
 }

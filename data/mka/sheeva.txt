@@ -1,0 +1,13 @@
+sheeva.sec
+sheeva_ap.sec
+sheeva.mko
+sh_sheeva.sec
+fight_fx.mko
+blood_fx.mko
+sheeva_fx.mko
+kuatan.mko
+shokan_blades.mko
+sheeva_anims.sec
+caf_sheeva_anims.sec
+kuatan_anims.sec
+shokan_blades_anims.sec

@@ -1,0 +1,13 @@
+raiden_alt.sec
+raiden_alt_ap.sec
+raiden.mko
+sh_raiden.sec
+fight_fx.mko
+blood_fx.mko
+raiden_fx.mko
+nanchuan.mko
+staff.mko
+raiden_alt_anims.sec
+caf_raiden_anims.sec
+nanchuan_anims.sec
+staff_anims.sec

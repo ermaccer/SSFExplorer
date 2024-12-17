@@ -1,0 +1,3 @@
+script_reactions.mko
+hand_anims.sec
+shared_anims.sec

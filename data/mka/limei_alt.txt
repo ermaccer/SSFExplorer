@@ -1,0 +1,13 @@
+limei_alt.sec
+limei_alt_ap.sec
+limei.mko
+sh_limei.sec
+fight_fx.mko
+blood_fx.mko
+limei_fx.mko
+luihebafa.mko
+limei_sword.mko
+limei_alt_anims.sec
+caf_limei_anims.sec
+luihebafa_anims.sec
+limei_sword_anims.sec

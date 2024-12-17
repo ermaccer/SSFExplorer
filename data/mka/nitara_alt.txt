@@ -1,0 +1,13 @@
+nitara_alt.sec
+nitara_alt_ap.sec
+sh_nitara.sec
+nitara.mko
+blood_fx.mko
+fight_fx.mko
+nitara_fx.mko
+leopard.mko
+kama.mko
+nitara_anims.sec
+caf_nitara_anims.sec
+leopard_anims.sec
+kama_anims.sec

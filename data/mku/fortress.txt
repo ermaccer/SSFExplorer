@@ -1,0 +1,4 @@
+fortress.mko
+fortress.sec
+fortress_fx.mko
+fortress_anims.sec

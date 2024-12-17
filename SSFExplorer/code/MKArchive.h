@@ -5,6 +5,9 @@
 #define NO_STRING_OFFSET 2088770127
 #define DEFAULT_SSF_PADSIZE 2048
 #define SEC_PADSIZE			512
+#define SEC_FILEPADSIZE		128
+#define SEC_STRINGPAD		4
+#define DUMYMDATA_SIZE		4096
 
 enum eSectionFileTypes : int {
 	FILE_TYPE_SECTION = 1,
@@ -82,3 +85,6 @@ section_file_entry_da D2DA_Entry(section_file_entry d_entry);
 
 std::wstring GetSectionTypeName(eSectionFileTypes type);
 std::wstring GetSectionTypeName_DA(eSectionFileTypes type);
+
+
+extern const unsigned char gDummyData[DUMYMDATA_SIZE];

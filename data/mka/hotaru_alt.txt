@@ -1,0 +1,13 @@
+hotaru_alt.sec
+hotaru_alt_ap.sec
+hotaru.mko
+sh_hotaru.sec
+fight_fx.mko
+blood_fx.mko
+hotaru_fx.mko
+pigua.mko
+naginata.mko
+hotaru_alt_anims.sec
+caf_hotaru_anims.sec
+pigua_anims.sec
+naginata_anims.sec

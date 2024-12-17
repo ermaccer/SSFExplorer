@@ -1,0 +1,13 @@
+fujin_alt.sec
+fujin_alt_ap.sec
+sh_fujin.sec
+fujin.mko
+blood_fx.mko
+fight_fx.mko
+fujin_fx.mko
+shk_2.mko
+devastator.mko
+fujin_alt_anims.sec
+shk_2_anims.sec
+devastator_anims.sec
+caf_fujin_anims.sec

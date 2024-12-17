@@ -1,0 +1,13 @@
+tanya.sec
+tanya_ap.sec
+tanya.mko
+sh_tanya.sec
+fight_fx.mko
+blood_fx.mko
+tanya_fx.mko
+yue_chuan.mko
+tonfa.mko
+tanya_anims.sec
+caf_tanya_anims.sec
+yue_chuan_anims.sec
+tonfa_anims.sec

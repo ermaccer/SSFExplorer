@@ -1,0 +1,13 @@
+noob_alt.sec
+noob_alt_ap.sec
+sh_noob.sec
+noob.mko
+blood_fx.mko
+fight_fx.mko
+noob_fx.mko
+monkey.mko
+troll_ham.mko
+noob_alt_anims.sec
+caf_noob_anims.sec
+monkey_anims.sec
+troll_ham_anims.sec

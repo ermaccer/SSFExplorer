@@ -1,0 +1,13 @@
+cassius_alt.sec
+cassius_alt_ap.sec
+darrius.mko
+fight_fx.mko
+blood_fx.mko
+cassius_fx.mko
+sh_cassius.sec
+gojuryu.mko
+gauntlets.mko
+gojuryu_anims.sec
+gauntlets_anims.sec
+cassius_alt_anims.sec
+caf_cassius_anims.sec

@@ -1,0 +1,11 @@
+noob.sec
+noob_ap.sec
+sh_noob.sec
+noob.mko
+fight_fx.mko
+blood_fx.mko
+monkey.mko
+style_monkey.sec
+noob_anims.sec
+monkey_anims.sec
+pz_noob_anims.sec

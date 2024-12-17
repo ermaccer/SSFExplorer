@@ -1,0 +1,13 @@
+liukang.sec
+liukang_ap.sec
+liukang.mko
+sh_liukang.sec
+fight_fx.mko
+blood_fx.mko
+luikang_fx.mko
+jun_fan.mko
+nunchaku.mko
+liukang_anims.sec
+caf_liukang_anims.sec
+jun_fan_anims.sec
+nunchaku_anims.sec

@@ -1,0 +1,17 @@
+mkda_kunglao.sec
+mkda_kunglao_ap.sec
+sh_mkda_kunglao.sec
+mkda_kunglao.mko
+fight_fx.mko
+blood_fx.mko
+mantis.mko
+style_mantis.sec
+shaolin_fist.mko
+style_shaolin_fist.sec
+broadsword.mko
+style_broadsword.sec
+kunglao_anims.sec
+mantis_anims.sec
+shaolin_fist_anims.sec
+broadsword_anims.sec
+pz_noob_anims.sec

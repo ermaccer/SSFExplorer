@@ -1,0 +1,6 @@
+bio_strings_eng.mko
+bio_strings_spa.mko
+bio_strings_ger.mko
+bio_strings_fre.mko
+bio_strings_ita.mko
+bio_strings_eng_uk.mko

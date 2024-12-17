@@ -1,0 +1,13 @@
+ashrah.sec
+ashrah_ap.sec
+ashrah.mko
+sh_ashrah.sec
+fight_fx.mko
+blood_fx.mko
+ashrah_fx.mko
+choujaio.mko
+kriss.mko
+ashrah_anims.sec
+caf_ashrah_anims.sec
+choujaio_anims.sec
+kriss_anims.sec

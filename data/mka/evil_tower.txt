@@ -1,0 +1,7 @@
+evil_tower.sec
+evil_tower.mko
+evil_tower_fx.mko
+evil_tower_fall_down_art.sec
+evil_tower_intro_cam_art.sec
+evil_tower_anims.sec
+evil_tower_fall_down_anims.sec

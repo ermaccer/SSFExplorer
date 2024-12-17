@@ -1,0 +1,8 @@
+attract.sec
+mkd_end_game.sec
+legal_screen.sec
+legal_screen_spa.sec
+legal_screen_ger.sec
+legal_screen_fre.sec
+legal_screen_ita.sec
+demo_logo.sec

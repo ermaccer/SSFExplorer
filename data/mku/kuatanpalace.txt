@@ -1,0 +1,4 @@
+kuatanpalace.mko
+kuatanpalace.sec
+kuatanpalace_fx.mko
+kuatanpalace_anims.sec

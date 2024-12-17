@@ -14,6 +14,11 @@
 #include <string>
 #include "image.h"
 
+SSFExplorer::SSFExplorer()
+{
+	ReadSettings();
+}
+
 void SSFExplorer::Init(HWND* log, HWND* list, HWND* data)
 {
 	eApp::bIsReady = false;
@@ -23,8 +28,23 @@ void SSFExplorer::Init(HWND* log, HWND* list, HWND* data)
 	m_settings.m_bFirstRun = true;
 	m_bUsesFilenames = false;
 	m_bFighterFix = false;
-	ReadSettings();
 
+
+	Files.clear();
+	InputPath = L" ";
+	OutputPath = L" ";
+	m_bUsesFilenames = false;
+	m_bFighterFix = false;
+
+	if (hFilesList)
+		SendMessage(*hFilesList, LB_RESETCONTENT, 0, 0);
+	if (hLogBox)
+		SetWindowText(*hLogBox, L"");
+	if (hDataBox)
+		SetWindowText(*hDataBox, L"");
+
+	SetWindowText(GetDlgItem(eApp::hWindow, SSF_FILENAME), L"");
+	SetWindowText(GetDlgItem(eApp::hWindow, SSF_BUILD_FILE), L"");
 
 }
 
@@ -172,7 +192,7 @@ void SSFExplorer::ReadFile_D()
 	}
 
 	for (unsigned int i = 0; i < Files.size(); i++)
-		Log(L"Size: " + std::to_wstring(Files[i].ent.size) + L" Type: " + std::to_wstring(Files[i].ent.type));
+		Log(L"Size: " + std::to_wstring(Files[i].ent.size));
 
 
 	if (sec.stringSize >= NO_STRING_DATA || sec.stringSize <= 20)
@@ -558,7 +578,7 @@ void SSFExplorer::ExtractAll()
 		pFile.seekg(Files[i].ent.offset, pFile.beg);
 		pFile.read(dataBuff.get(), Files[i].ent.size);
 		oFile.write(dataBuff.get(), Files[i].ent.size);
-
+		oFile.close();
 		Log(L"File: " + name + L" extracted!");
 	}
 
@@ -627,6 +647,7 @@ void SSFExplorer::Export()
 		pFile.seekg(Files[i].ent.offset, pFile.beg);
 		pFile.read(dataBuff.get(), Files[i].ent.size);
 		oFile.write(dataBuff.get(), Files[i].ent.size);
+		oFile.close();
 
 		Log(L"File: " + Files[i].name + L" extracted!");
 	}
@@ -1360,6 +1381,36 @@ void SSFExplorer::Build()
 
 	std::filesystem::current_path(path);
 
+
+	if (m_bUsesFilenames)
+	{
+		for (unsigned int i = 0; i < Files.size(); i++)
+		{
+			m_secHeader.stringSize += Files[i].name.length() + 1;
+		}
+	}
+	else
+		m_secHeader.stringSize = NO_STRING_DATA;
+
+
+	if (m_bUsesFilenames)
+	{
+		int hsize = sizeof(section_file_header) + (sizeof(section_file_entry) * Files.size()) + makePad(m_secHeader.stringSize, SEC_STRINGPAD);
+		m_secHeader.fileSize += hsize;
+
+	}
+	else
+	{
+		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+			m_secHeader.fileSize += makePad(sizeof(section_file_header_da), DEFAULT_SSF_PADSIZE);
+		else
+			m_secHeader.fileSize += makePad(sizeof(section_file_header), DEFAULT_SSF_PADSIZE);
+
+	}
+
+	int baseSize = m_secHeader.fileSize;
+
+
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
 		if (std::filesystem::exists(Files[i].name))
@@ -1367,9 +1418,13 @@ void SSFExplorer::Build()
 			if (!m_bUsesFilenames)
 				m_secHeader.fileSize += makePad(std::filesystem::file_size(Files[i].name), DEFAULT_SSF_PADSIZE);
 			else
-				m_secHeader.fileSize += std::filesystem::file_size(Files[i].name);
+			{
+				int currentFileSize = std::filesystem::file_size(Files[i].name);
+				m_secHeader.fileSize += currentFileSize;
+				if (IsSizeSafeToPad(currentFileSize))
+					m_secHeader.fileSize += makePad(m_secHeader.fileSize, SEC_FILEPADSIZE) - m_secHeader.fileSize;
+			}
 		}
-
 		else
 		{
 			std::wstring error = L"File ";
@@ -1388,35 +1443,6 @@ void SSFExplorer::Build()
 		return;
 	}
 
-	if (m_bUsesFilenames)
-	{
-		for (unsigned int i = 0; i < Files.size(); i++)
-		{
-			m_secHeader.stringSize += Files[i].name.length() + 1;
-		}
-	}
-	else
-		m_secHeader.stringSize = NO_STRING_DATA;
-
-
-	if (m_bUsesFilenames)
-	{
-		int hsize = sizeof(section_file_header) + (sizeof(section_file_entry) * Files.size()) + m_secHeader.stringSize;
-		m_secHeader.fileSize += hsize;
-
-		int psize = makePad(hsize, SEC_PADSIZE) - hsize;
-		m_secHeader.fileSize += psize;
-
-	}
-	else
-	{
-		if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-			m_secHeader.fileSize += makePad(sizeof(section_file_header_da), DEFAULT_SSF_PADSIZE);
-		else
-			m_secHeader.fileSize += makePad(sizeof(section_file_header), DEFAULT_SSF_PADSIZE);
-
-	}
-
 
 	if (m_settings.m_epPlatform == PLATFORM_GC_WII)
 	{
@@ -1431,6 +1457,37 @@ void SSFExplorer::Build()
 		changeEndINT(&m_secHeader.version);
 	}
 
+	int baseOffset = DEFAULT_SSF_PADSIZE;
+	int stringsSize = 0;
+	int headerPadToWrite = 0;
+
+	for (unsigned int i = 0; i < Files.size(); i++)
+		stringsSize += Files[i].name.length() + 1;
+
+	int headerSize = sizeof(section_file_header) + (sizeof(section_file_entry) * Files.size()) + stringsSize;
+
+	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
+		headerSize = sizeof(section_file_header_da) + (sizeof(section_file_entry_da) * Files.size()) + stringsSize;
+
+	int padOffset = makePad(headerSize, SEC_PADSIZE) - headerSize;
+
+	if (m_bUsesFilenames)
+		padOffset = makePad(stringsSize, SEC_STRINGPAD) - stringsSize;
+
+	if (m_bUsesFilenames)
+	{
+		headerPadToWrite = makePad(m_secHeader.fileSize, SEC_FILEPADSIZE) - m_secHeader.fileSize;
+		m_secHeader.fileSize += headerPadToWrite;
+		padOffset += headerPadToWrite;
+		baseOffset = headerSize + padOffset;
+	}
+	else
+	{
+
+	}
+		
+
+
 	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
 	{
 		section_file_header_da header = D2DA_Header(m_secHeader);
@@ -1440,50 +1497,32 @@ void SSFExplorer::Build()
 	else
 		oFile.write((char*)&m_secHeader, sizeof(section_file_header));
 
-	int baseOffset = DEFAULT_SSF_PADSIZE;
-	int stringsSize = 0;
-
-	for (unsigned int i = 0; i < Files.size(); i++)
-		stringsSize += Files[i].name.length() + 1;
-
-
-	int headerSize = sizeof(section_file_header) + (sizeof(section_file_entry) * Files.size()) + stringsSize;
-
-	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
-		headerSize = sizeof(section_file_header_da) + (sizeof(section_file_entry_da) * Files.size()) + stringsSize;
-
-	int padOffset = makePad(headerSize, SEC_PADSIZE) - headerSize;
-
-	if (m_bFighterFix)
-		padOffset = 0;
-
-	if (m_bUsesFilenames)
-		baseOffset = headerSize + padOffset;
-
 
 	int baseString = 0;
 
 	Log(L"Saving file headers");
 
-	bool firstFilePadFix = true;
-
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
-
-		int fsize = makePad(std::filesystem::file_size(Files[i].name), DEFAULT_SSF_PADSIZE);
 		Files[i].ent.size = std::filesystem::file_size(Files[i].name);
-
 
 		Files[i].ent.offset = baseOffset;
 
-
-		if (m_bFighterFix && firstFilePadFix)
+		if (Files[i].ent.size > 0)
 		{
-			padOffset = makePad(headerSize, SEC_PADSIZE) - headerSize;
-			baseOffset = headerSize + padOffset - 12;
-			firstFilePadFix = false;
+			if (m_bUsesFilenames)
+				baseOffset += Files[i].ent.size;
+			else
+				baseOffset += makePad(Files[i].ent.size, DEFAULT_SSF_PADSIZE);
 		}
 
+		if (Files[i].ent.size == 0)
+			Files[i].ent.offset = 0;
+
+		if (IsSizeSafeToPad(Files[i].ent.size) && m_bUsesFilenames)
+			Files[i].extraPad = makePad(baseOffset, SEC_FILEPADSIZE) - baseOffset;
+		else
+			Files[i].extraPad = 0;
 
 		if (m_bUsesFilenames)
 			Files[i].ent.stringOffset = baseString;
@@ -1508,22 +1547,23 @@ void SSFExplorer::Build()
 		else
 			oFile.write((char*)&Files[i].ent, sizeof(section_file_entry));
 
-		if (m_bUsesFilenames)
-			baseOffset += std::filesystem::file_size(Files[i].name);
-		else
-			baseOffset += fsize;
+
+
+		baseOffset += Files[i].extraPad;
 		baseString += Files[i].name.length() + 1;
 	}
+
+
 
 	int padSize = makePad(sizeof(section_file_header), DEFAULT_SSF_PADSIZE) - sizeof(section_file_header) - (sizeof(section_file_entry) * Files.size());
 	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
 		padSize = makePad(sizeof(section_file_header_da), DEFAULT_SSF_PADSIZE) - sizeof(section_file_header_da) - (sizeof(section_file_entry_da) * Files.size());
-	bool needsToSaveOriginalPad = false;
 
 	if (m_bUsesFilenames)
 	{
 		int fighterFix = 0;
 		Log(L"Saving names");
+		int stringLen = 0;
 		for (unsigned int i = 0; i < Files.size(); i++)
 		{
 			std::wstring wstr = Files[i].name;
@@ -1533,16 +1573,11 @@ void SSFExplorer::Build()
 			oFile.write((char*)&str.c_str()[0], Files[i].name.length());
 			char null = 0x00;
 			oFile.write((char*)&null, sizeof(char));
-
+			stringLen += Files[i].name.length() + 1;
 		}
 
-		if (m_bFighterFix)
-			needsToSaveOriginalPad = true;
 
-		padSize = makePad(headerSize, SEC_PADSIZE) - (headerSize);
-
-		if (m_bFighterFix)
-			padSize -= 12;
+		padSize = makePad(headerSize, SEC_STRINGPAD) - (headerSize);
 
 	}
 
@@ -1550,42 +1585,54 @@ void SSFExplorer::Build()
 	if (padSize < 0)
 		padSize = 0;
 
-	std::unique_ptr<char[]> pad = std::make_unique<char[]>(padSize);
-
-	if (!m_bFighterFix)
+	if (m_bUsesFilenames)
+		oFile.write((char*)&gDummyData[0], padSize);
+	else
+	{
+		std::unique_ptr<char[]> pad = std::make_unique<char[]>(padSize);
 		oFile.write(pad.get(), padSize);
+	}
+
+	if (headerPadToWrite > 0 && m_bUsesFilenames)
+		oFile.write((char*)&gDummyData[0], headerPadToWrite);
 
 
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
 		Log(L"Saving: " + Files[i].name);
+		if (Files[i].extraPad > 0)
+			Log(L"Pad: " + std::to_wstring(Files[i].extraPad));
 		std::ifstream pInput(Files[i].name, std::ifstream::binary);
+
 		int size = static_cast<int>(std::filesystem::file_size(Files[i].name));
 
 		std::unique_ptr<char[]> dataBuff = std::make_unique<char[]>(size);
 		pInput.read(dataBuff.get(), size);
 		oFile.write(dataBuff.get(), size);
 
-		if (needsToSaveOriginalPad)
-		{
-			oFile.write(pad.get(), padSize);
-			needsToSaveOriginalPad = false;
-		}
 
 		if (!m_bUsesFilenames)
 		{
 			int pad_size = makePad(static_cast<int>(std::filesystem::file_size(Files[i].name)), DEFAULT_SSF_PADSIZE);
 
+			std::unique_ptr<char[]> pad = std::make_unique<char[]>(padSize);
 			pad = std::make_unique<char[]>(pad_size - size);
 			oFile.write(pad.get(), pad_size - size);
 		}
+		else
+			oFile.write((char*)&gDummyData[0], Files[i].extraPad);
+
 		pInput.close();
-
-
 	}
 
+	oFile.close();
 	MessageBox(0, L"Done!", L"Information", MB_ICONINFORMATION);
 
+}
+
+bool SSFExplorer::IsSizeSafeToPad(int size)
+{
+	return size < SEC_FILEPADSIZE && size > 0;
 }
 
 void SSFExplorer::ExtractPAK()
@@ -1838,7 +1885,7 @@ std::wstring   SetFolderFromButton(HWND hWnd)
 	BROWSEINFO bi = {};
 	bi.lpszTitle = L"Select Folder";
 	bi.hwndOwner = hWnd;
-	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | BIF_EDITBOX;
 
 	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
 

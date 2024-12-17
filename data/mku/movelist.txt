@@ -1,0 +1,6 @@
+movelist_eng.mko
+movelist_spa.mko
+movelist_ger.mko
+movelist_fre.mko
+movelist_ita.mko
+movelist_eng_uk.mko
