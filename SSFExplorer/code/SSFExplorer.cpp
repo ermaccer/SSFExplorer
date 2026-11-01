@@ -164,7 +164,7 @@ void SSFExplorer::ReadFile_D()
 		changeEndINT(&sec.fileSize);
 		changeEndINT(&sec.pad);
 		changeEndINT(&sec.stringSize);
-		changeEndINT(&sec.unknown);
+		changeEndINT(&sec.fileID);
 		changeEndINT(&sec.version);
 	}
 
@@ -270,7 +270,7 @@ void SSFExplorer::ReadFile_DA()
 		changeEndINT(&sec.files);
 		changeEndINT(&sec.fileSize);
 		changeEndINT(&sec.pad);
-		changeEndINT(&sec.unknown);
+		changeEndINT(&sec.fileID);
 		changeEndINT(&sec.version);
 	}
 
@@ -320,7 +320,7 @@ void SSFExplorer::ReadFile_DA()
 
 	ListFiles();
 
-	m_nUnknownDA = sec.unknown;
+	m_nUnknownDA = sec.fileID;
 	m_secHeader = DA2D_Header(sec);
 
 	eApp::bIsIni = FALSE;
@@ -345,6 +345,7 @@ void SSFExplorer::ReadINI()
 	m_secHeader.files = reader.ReadInteger(L"Build.Settings", L"Files", 0);
 	m_bUsesFilenames = reader.ReadInteger(L"Build.Settings", L"UsesFilenames", false);
 	m_wstrBuildFolder = reader.ReadString(L"Build.Settings", L"Folder ", 0);
+	m_nFileID = reader.ReadInteger(L"Build.Settings", L"FileID", 0);
 
 
 	int isDa = reader.ReadInteger(L"Build.Settings", L"IsDA", 0);
@@ -603,6 +604,7 @@ void SSFExplorer::Export()
 	ini << L"[Build.Settings]\n";
 	ini << L"Files = " << m_secHeader.files << std::endl;
 	ini << L"UsesFilenames = " << m_bUsesFilenames << std::endl;
+	ini << L"FileID = " << m_secHeader.fileID << std::endl;
 
 	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
 	{
@@ -626,6 +628,7 @@ void SSFExplorer::Export()
 
 
 	cfg << folderName.c_str() << std::endl;
+	cfg << m_secHeader.fileID << std::endl;
 	for (unsigned int i = 0; i < Files.size(); i++)
 	{
 		cfg << std::to_wstring(Files[i].ent.type) << L" " << Files[i].name << std::endl;
@@ -1364,7 +1367,7 @@ void SSFExplorer::Build()
 	m_secHeader.pad = 0;
 	m_secHeader.fileSize = 0;
 	m_secHeader.stringSize = 0;
-	m_secHeader.unknown = 0;
+	m_secHeader.fileID = m_nFileID;
 	m_secHeader.version = 4;
 
 	std::wstring path = wsplitString(InputPath, false);
@@ -1453,7 +1456,7 @@ void SSFExplorer::Build()
 		changeEndINT(&m_secHeader.fileSize);
 		changeEndINT(&m_secHeader.pad);
 		changeEndINT(&m_secHeader.stringSize);
-		changeEndINT(&m_secHeader.unknown);
+		changeEndINT(&m_secHeader.fileID);
 		changeEndINT(&m_secHeader.version);
 	}
 
@@ -1491,7 +1494,7 @@ void SSFExplorer::Build()
 	if (m_settings.m_egGame == MORTAL_KOMBAT_DEADLY_ALLIANCE)
 	{
 		section_file_header_da header = D2DA_Header(m_secHeader);
-		header.unknown = m_nUnknownDA;
+		header.fileID = m_nUnknownDA;
 		oFile.write((char*)&header, sizeof(section_file_header_da));
 	}
 	else
@@ -1749,6 +1752,10 @@ void SSFExplorer::ConvertCFGToINI()
 		folder = wstr;
 	}
 
+	int fileID = 0;
+	char fileIDText[512] = {};
+	fgets(fileIDText, sizeof(fileIDText), pFile);
+	sscanf(fileIDText, "%d", &fileID);
 
 
 	while (fgets(szLine, sizeof(szLine), pFile))
@@ -1772,6 +1779,7 @@ void SSFExplorer::ConvertCFGToINI()
 	ini << L"[Build.Settings]\n";
 	ini << L"Files = " << types.size() << std::endl;
 	ini << L"UsesFilenames = " << true << std::endl;
+	ini << L"FileID = " << fileID << std::endl;
 	ini << L"Folder = " << folder << std::endl << std::endl;
 
 

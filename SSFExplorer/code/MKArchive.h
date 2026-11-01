@@ -27,7 +27,7 @@ struct section_file_header {
 	int   header;
 	int   version; // 4?
 	int   pad;
-	int   unknown;
+	int   fileID;
 	int   files;
 	int   stringSize;
 	int   fileSize;
@@ -44,7 +44,7 @@ struct section_file_header_da {
 	int   header;
 	int   version;
 	int   pad;
-	int   unknown;
+	int   fileID;
 	int   files;
 	int   fileSize;
 };

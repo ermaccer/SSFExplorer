@@ -8,7 +8,7 @@
 #include "MKArchive.h"
 
 
-#define SSF_EXPLORER_VERSION L"1.2"
+#define SSF_EXPLORER_VERSION L"1.2.1"
 
 
 enum eOutputImageFormat {
@@ -82,6 +82,7 @@ public:
 	bool				 m_bFighterFix;
 	int					 m_nUnknownDA;
 	std::wstring         m_wstrBuildFolder;
+	int					 m_nFileID;
 
 	ssfexplorer_settings m_settings;
 

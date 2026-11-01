@@ -7,7 +7,7 @@ section_file_header DA2D_Header(section_file_header_da da_header)
 	result.header = da_header.header;
 	result.version = da_header.version;
 	result.pad = da_header.pad;
-	result.unknown = da_header.unknown;
+	result.fileID = da_header.fileID;
 	result.files = da_header.files;
 	result.fileSize = da_header.fileSize;
 	result.stringSize = NO_STRING_DATA;
@@ -33,7 +33,7 @@ section_file_header_da D2DA_Header(section_file_header d_header)
 	result.header = d_header.header;
 	result.version = d_header.version;
 	result.pad = d_header.pad;
-	result.unknown = d_header.unknown;
+	result.fileID = d_header.fileID;
 	result.files = d_header.files;
 	result.fileSize = d_header.fileSize;
 
