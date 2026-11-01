@@ -8,7 +8,7 @@
 #include "MKArchive.h"
 
 
-#define SSF_EXPLORER_VERSION L"1.2.1"
+#define SSF_EXPLORER_VERSION L"1.5"
 
 
 enum eOutputImageFormat {
