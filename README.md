@@ -35,8 +35,6 @@ To create an archive, you will need original file metadata -
 this can be saved when you open any archive and select "Export For Building" option.
 
 Open the ini file using File->Open INI.
-This will load the configuration file and populate objects
-in editing group.
+This will load the configuration file and populate objects in editing group.
 
-If you want to create character archives (scorpion.sec for example), check "Build as character section file".
-This option should be checked if FACEDAM file is present. This advice doesn't apply to MKDA.
+Set path and build.
